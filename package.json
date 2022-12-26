@@ -10,5 +10,10 @@
     "packages": [
       "apps/*"
     ]
+  },
+  "scripts": {
+    "open:all": "yarn open:app & yarn open:server",
+    "open:app": "code ./apps/inertiion",
+    "open:server": "code ./apps/scratchworks-backend"
   }
 }
