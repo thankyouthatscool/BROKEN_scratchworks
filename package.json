@@ -14,6 +14,7 @@
   "scripts": {
     "open:all": "yarn open:app & yarn open:server",
     "open:app": "code ./apps/inertiion",
-    "open:server": "code ./apps/scratchworks-backend"
+    "open:server": "code ./apps/scratchworks-backend",
+    "start:tunnel": "ngrok http 5001"
   }
 }
