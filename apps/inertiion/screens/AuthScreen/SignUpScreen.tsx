@@ -1,22 +1,96 @@
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as SecureStore from "expo-secure-store";
+import { ComponentPropsWithoutRef } from "react";
+import { SubmitHandler, useController, useForm } from "react-hook-form";
 import { View } from "react-native";
+import { z } from "zod";
 
 import WelcomeCatsImage from "@assets/welcome-cats.svg";
 import { ButtonBase } from "@components/Button";
 import { ErrorMessageText } from "@components/ErrorMessageText";
 import { ScreenContainer } from "@components/ScreenContainer";
 import { TextInputBase } from "@components/TextInput/TextInputBase";
+import { useAppDispatch, useToast } from "@hooks";
+import { setUser } from "@store";
 import { APP_PADDING, AUTH_SCREEN_IMAGE_HEIGHT } from "@theme";
-import type { SignUpScreenProps } from "@types";
-import { lookupImageSize } from "@utils";
+import type {
+  AuthTextInputProps,
+  LocalUser,
+  SignUpFormProps,
+  SignUpFormTextInputProps,
+  SignUpScreenProps,
+} from "@types";
+import { lookupImageSize, trpc } from "@utils";
 
 const { imageHeight, imageWidth } = lookupImageSize("welcomeCats");
 
+const signUpFormSchema = z
+  .object({
+    email: z.string().email({ message: "Please enter a valid email address." }),
+    password: z
+      .string()
+      .min(8, { message: "Password is required - 8 chars min" }),
+    passwordConfirmation: z
+      .string()
+      .min(8, { message: "Password is required - 8 chars min" }),
+  })
+  .refine(
+    ({ password, passwordConfirmation }) => password === passwordConfirmation,
+    { message: "Passwords must match", path: ["passwordConfirmation"] }
+  );
+
 export const SignUpScreen = ({ navigation }: SignUpScreenProps) => {
-  const [isEmailError, setIsEmailError] = useState<boolean>(false);
-  const [isPasswordError, setIsPasswordError] = useState<boolean>(false);
-  const [isPasswordConfirmationError, setIsPasswordConfirmationError] =
-    useState<boolean>(false);
+  const dispatch = useAppDispatch();
+
+  const {
+    clearErrors,
+    control,
+    formState: { errors },
+    handleSubmit,
+    reset,
+    resetField,
+  } = useForm<SignUpFormProps>({
+    mode: "onTouched",
+    resolver: zodResolver(signUpFormSchema),
+  });
+
+  const { mutateAsync: signUpMutateAsync } =
+    trpc.inertiion.auth.signUp.useMutation();
+
+  const { showToast } = useToast();
+
+  const onSubmit: SubmitHandler<SignUpFormProps> = async ({
+    email,
+    password,
+  }) => {
+    const res = await signUpMutateAsync({
+      application: "inertiion",
+      email,
+      password,
+    });
+
+    if (typeof res === "string") {
+      showToast({ message: res });
+
+      resetField("password");
+      resetField("passwordConfirmation");
+    } else {
+      const token = res.token;
+
+      await SecureStore.setItemAsync("token", token);
+
+      const userData = res.userData as LocalUser;
+
+      dispatch(setUser({ id: userData.id, email: userData.email }));
+
+      showToast({ message: "Successfully signed up!" });
+
+      reset();
+      clearErrors();
+
+      navigation.navigate("HomeScreen");
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -31,55 +105,91 @@ export const SignUpScreen = ({ navigation }: SignUpScreenProps) => {
           width={(imageWidth / imageHeight) * AUTH_SCREEN_IMAGE_HEIGHT}
         />
       </View>
-      <TextInputBase
+      <SignUpFormTextInput
+        control={control}
+        keyboardType="email-address"
+        name="email"
         placeholder="Email"
-        style={{ marginBottom: isEmailError ? 0 : APP_PADDING }}
       />
-      {isEmailError && <ErrorMessageText message="email required" />}
-      <TextInputBase
-        secureTextEntry
+      <SignUpFormTextInput
+        control={control}
+        name="password"
         placeholder="Password"
-        style={{ marginBottom: isPasswordError ? 0 : APP_PADDING }}
+        secure
       />
-      {isPasswordError && <ErrorMessageText message="password required" />}
-      <TextInputBase
-        secureTextEntry
+      <SignUpFormTextInput
+        control={control}
+        name="passwordConfirmation"
         placeholder="Confirm Password"
-        style={{ marginBottom: isPasswordError ? 0 : APP_PADDING }}
+        secure
       />
-      {isPasswordConfirmationError && (
-        <ErrorMessageText message="passwords must match" />
-      )}
-      <View
-        style={{
-          alignItems: "flex-start",
-          flexDirection: "row",
-          justifyContent: "flex-end",
-          marginBottom: APP_PADDING,
-        }}
-      >
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View>
+          <ButtonBase
+            onPress={() => {
+              navigation.navigate("LoginScreen", {});
+            }}
+            title="Log In"
+          />
+        </View>
         <View style={{ flexDirection: "row" }}>
           <ButtonBase
             marginRight
             onPress={() => {
-              navigation.goBack();
+              clearErrors();
+              reset();
             }}
-            title="Cancel"
+            title="Clear"
             type="secondary"
           />
           <ButtonBase
             disabled={
-              !!isEmailError ||
-              !!isPasswordError ||
-              !!isPasswordConfirmationError
+              !!errors["email"] ||
+              !!errors["password"] ||
+              !!errors["passwordConfirmation"]
             }
-            onPress={() => {
-              console.log("Signing Up...");
-            }}
+            onPress={handleSubmit(onSubmit)}
             title="Sign Up"
           />
         </View>
       </View>
     </ScreenContainer>
+  );
+};
+
+const SignUpFormTextInput = ({
+  additionalOnChange,
+  control,
+  defaultValue,
+  name,
+  secure,
+  ...props
+}: AuthTextInputProps &
+  SignUpFormTextInputProps &
+  ComponentPropsWithoutRef<typeof TextInputBase>) => {
+  const {
+    field,
+    formState: { errors },
+  } = useController({ control, defaultValue, name });
+
+  return (
+    <View>
+      <TextInputBase
+        {...props}
+        autoCapitalize="none"
+        onBlur={field.onBlur}
+        onChangeText={(text) => {
+          field.onChange(text);
+
+          if (!!additionalOnChange) {
+            additionalOnChange(text);
+          }
+        }}
+        secureTextEntry={!!secure}
+        style={{ marginBottom: !!errors[name] ? 0 : APP_PADDING }}
+        value={field.value}
+      />
+      {!!errors[name] && <ErrorMessageText message={errors[name]?.message!} />}
+    </View>
   );
 };

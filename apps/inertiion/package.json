@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "expo start -c",
+    "start": "dotenv -e .env -e .api.env expo start -c",
     "android": "yarn start --android"
   },
   "dependencies": {
@@ -13,6 +13,7 @@
     "@react-navigation/native": "^6.1.1",
     "@react-navigation/native-stack": "^6.9.7",
     "@reduxjs/toolkit": "^1.9.1",
+    "@scratchworks/scratchworks-backend": "*",
     "@tanstack/react-query": "^4.20.4",
     "@trpc/client": "^10.7.0",
     "@trpc/react-query": "^10.7.0",

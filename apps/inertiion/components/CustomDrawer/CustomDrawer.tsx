@@ -4,8 +4,12 @@ import {
   DrawerItem,
   DrawerItemList,
 } from "@react-navigation/drawer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { Text, View } from "react-native";
 
+import { useAppDispatch, useAppSelector } from "@hooks";
+import { clearUser } from "@store";
 import {
   APP_FONT_SIZE,
   DRAWER_HEADING_MULTIPLICATION_FACTOR,
@@ -13,6 +17,10 @@ import {
 } from "@theme";
 
 export const CustomDrawer = (props: DrawerContentComponentProps) => {
+  const { user } = useAppSelector(({ app }) => app);
+
+  const dispatch = useAppDispatch();
+
   return (
     <DrawerContentScrollView {...props}>
       <View
@@ -32,12 +40,19 @@ export const CustomDrawer = (props: DrawerContentComponentProps) => {
         </Text>
       </View>
       <DrawerItemList {...props} />
-      <DrawerItem
-        onPress={() => {
-          console.log("Logging out...");
-        }}
-        label="Logout"
-      />
+      {!!user && (
+        <DrawerItem
+          onPress={async () => {
+            await AsyncStorage.removeItem("userData");
+            await SecureStore.deleteItemAsync("token");
+
+            dispatch(clearUser());
+
+            props.navigation.closeDrawer();
+          }}
+          label="Logout"
+        />
+      )}
     </DrawerContentScrollView>
   );
 };

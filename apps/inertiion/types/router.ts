@@ -32,11 +32,6 @@ export type LoginScreenProps = CompositeScreenProps<
   DrawerScreenProps<RootNavigatorProps>
 >;
 
-export type SignUpScreenProps = CompositeScreenProps<
-  NativeStackScreenProps<AuthScreenNavigatorProps, "SignUpScreen">,
-  DrawerScreenProps<RootNavigatorProps>
->;
-
 export type ForgotPasswordScreenProps = CompositeScreenProps<
   NativeStackScreenProps<AuthScreenNavigatorProps, "ForgotPasswordScreen">,
   DrawerScreenProps<RootNavigatorProps>
@@ -45,6 +40,14 @@ export type ForgotPasswordScreenProps = CompositeScreenProps<
 export type HomeScreenRootProps = CompositeScreenProps<
   NativeStackScreenProps<HomeScreenNavigatorProps, "HomeScreenRoot">,
   DrawerScreenProps<RootNavigatorProps>
+>;
+
+export type SignUpScreenProps = CompositeScreenProps<
+  CompositeScreenProps<
+    NativeStackScreenProps<AuthScreenNavigatorProps, "SignUpScreen">,
+    DrawerScreenProps<RootNavigatorProps>
+  >,
+  HomeScreenRootProps
 >;
 
 export type OrdersScreenRootProps = CompositeScreenProps<
