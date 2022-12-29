@@ -1,17 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as SecureStore from "expo-secure-store";
-import { ComponentPropsWithoutRef } from "react";
+import { ComponentPropsWithoutRef, useEffect, useState } from "react";
 import { SubmitHandler, useController, useForm } from "react-hook-form";
 import { View } from "react-native";
 import { z } from "zod";
 
-import WelcomeCatsImage from "@assets/welcome-cats.svg";
+import WelcomeAltImage from "@assets/welcome-alt.svg";
 import { ButtonBase } from "@components/Button";
 import { ErrorMessageText } from "@components/ErrorMessageText";
 import { ScreenContainer } from "@components/ScreenContainer";
 import { TextInputBase } from "@components/TextInput/TextInputBase";
-import { useAppDispatch, useToast } from "@hooks";
-import { setUser } from "@store";
+import { useAppDispatch, useAppSelector, useToast } from "@hooks";
+import { setLoading, setUser } from "@store";
 import { APP_PADDING, AUTH_SCREEN_IMAGE_HEIGHT } from "@theme";
 import type {
   AuthTextInputProps,
@@ -39,8 +39,15 @@ const signUpFormSchema = z
     { message: "Passwords must match", path: ["passwordConfirmation"] }
   );
 
-export const SignUpScreen = ({ navigation }: SignUpScreenProps) => {
+export const SignUpScreen = ({
+  navigation,
+  route: { params },
+}: SignUpScreenProps) => {
+  const [emailAddressCopy, setEmailAddressCopy] = useState<string>("");
+
   const dispatch = useAppDispatch();
+
+  const { loading } = useAppSelector(({ app }) => app);
 
   const {
     clearErrors,
@@ -49,6 +56,7 @@ export const SignUpScreen = ({ navigation }: SignUpScreenProps) => {
     handleSubmit,
     reset,
     resetField,
+    setValue,
   } = useForm<SignUpFormProps>({
     mode: "onTouched",
     resolver: zodResolver(signUpFormSchema),
@@ -63,6 +71,8 @@ export const SignUpScreen = ({ navigation }: SignUpScreenProps) => {
     email,
     password,
   }) => {
+    dispatch(setLoading(true));
+
     const res = await signUpMutateAsync({
       application: "inertiion",
       email,
@@ -90,7 +100,15 @@ export const SignUpScreen = ({ navigation }: SignUpScreenProps) => {
 
       navigation.navigate("HomeScreen");
     }
+
+    dispatch(setLoading(false));
   };
+
+  useEffect(() => {
+    if (params?.email) {
+      setValue("email", params.email);
+    }
+  }, [params]);
 
   return (
     <ScreenContainer>
@@ -100,25 +118,31 @@ export const SignUpScreen = ({ navigation }: SignUpScreenProps) => {
           marginBottom: APP_PADDING * 2,
         }}
       >
-        <WelcomeCatsImage
+        <WelcomeAltImage
           height={AUTH_SCREEN_IMAGE_HEIGHT}
           width={(imageWidth / imageHeight) * AUTH_SCREEN_IMAGE_HEIGHT}
         />
       </View>
       <SignUpFormTextInput
+        additionalOnChange={(text) => {
+          setEmailAddressCopy(() => text);
+        }}
         control={control}
+        editable={!loading}
         keyboardType="email-address"
         name="email"
         placeholder="Email"
       />
       <SignUpFormTextInput
         control={control}
+        editable={!loading}
         name="password"
         placeholder="Password"
         secure
       />
       <SignUpFormTextInput
         control={control}
+        editable={!loading}
         name="passwordConfirmation"
         placeholder="Confirm Password"
         secure
@@ -126,14 +150,21 @@ export const SignUpScreen = ({ navigation }: SignUpScreenProps) => {
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <View>
           <ButtonBase
+            disabled={!!loading || !!errors["email"]}
             onPress={() => {
-              navigation.navigate("LoginScreen", {});
+              navigation.navigate("LoginScreen", {
+                email: emailAddressCopy || params?.email,
+              });
+
+              reset();
+              clearErrors();
             }}
             title="Log In"
           />
         </View>
         <View style={{ flexDirection: "row" }}>
           <ButtonBase
+            disabled={!!loading}
             marginRight
             onPress={() => {
               clearErrors();
@@ -144,6 +175,7 @@ export const SignUpScreen = ({ navigation }: SignUpScreenProps) => {
           />
           <ButtonBase
             disabled={
+              !!loading ||
               !!errors["email"] ||
               !!errors["password"] ||
               !!errors["passwordConfirmation"]

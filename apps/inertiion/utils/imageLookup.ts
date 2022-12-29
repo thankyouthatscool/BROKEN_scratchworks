@@ -6,6 +6,7 @@ const appImages = [
   },
   { imageName: "order", imageHeight: 557.51874, imageWidth: 885.55805 },
   { imageName: "signIn", imageHeight: 500.35625, imageWidth: 832.206004 },
+  { imageName: "welcomeAlt", imageHeight: 629.61397, imageWidth: 731.07696 },
   { imageName: "welcomeCats", imageHeight: 459.37952, imageWidth: 889.07556 },
 ];
 

@@ -1,9 +1,11 @@
 import { Prisma } from "@prisma/client";
+import sgMail from "@sendgrid/mail";
 import { compare, hash } from "bcryptjs";
 import { sign, verify } from "jsonwebtoken";
 import { z } from "zod";
 
 import { prisma } from "@db";
+import { generateCode } from "@utils";
 import { publicProcedure, router } from "..";
 
 export const loginInput = z.object({
@@ -18,6 +20,9 @@ export const signUpInput = z.object({
 
 const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again later.";
 const SECRET = process.env.SECRET!;
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY!;
+
+sgMail.setApiKey(SENDGRID_API_KEY);
 
 const login = publicProcedure
   .input(loginInput)
@@ -27,11 +32,7 @@ const login = publicProcedure
         where: { email },
       });
 
-      console.log(targetUser);
-
-      const isPasswordMatch = compare(password, targetUser.password);
-
-      console.log(isPasswordMatch);
+      const isPasswordMatch = await compare(password, targetUser.password);
 
       if (!!isPasswordMatch) {
         const userData = { id: targetUser.id, email: targetUser.email };
@@ -151,6 +152,87 @@ const verifyToken = publicProcedure.input(z.string()).mutation(({ input }) => {
   }
 });
 
-const auth = router({ login, signUp, verifyToken });
+const sendVerificationCode = publicProcedure
+  .input(z.string().email())
+  .mutation(async ({ input: email }) => {
+    const targetUser = await prisma.user.findFirst({ where: { email } });
+
+    if (!!targetUser) {
+      const verificationCode = generateCode(6);
+
+      let newVerificationCodes: number[];
+
+      if (targetUser.verificationCodes.length >= 5) {
+        const [_, ...rest] = targetUser.verificationCodes;
+
+        newVerificationCodes = [...rest, verificationCode];
+      } else {
+        newVerificationCodes = [
+          ...targetUser.verificationCodes,
+          verificationCode,
+        ];
+      }
+
+      await sgMail.send({
+        to: email,
+        from: "cees.zees.n@gmail.com",
+        subject: "Change password code",
+        text: `${verificationCode}`,
+      });
+
+      await prisma.user.update({
+        where: { email },
+        data: { verificationCodes: newVerificationCodes },
+      });
+    }
+
+    return "OK";
+  });
+
+const verifyCode = publicProcedure
+  .input(z.object({ code: z.string(), email: z.string().email() }))
+  .mutation(async ({ input: { code, email } }) => {
+    const targetUser = await prisma.user.findFirst({ where: { email } });
+
+    if (!!targetUser) {
+      const latestVerificationCode = targetUser.verificationCodes.slice(-1)[0];
+
+      if (parseInt(code) === latestVerificationCode) {
+        return "OK";
+      } else {
+        return "Incorrect verification code.";
+      }
+    } else {
+      return "NOT OK";
+    }
+  });
+
+const changePassword = publicProcedure
+  .input(z.object({ email: z.string().email(), password: z.string() }))
+  .mutation(async ({ input: { email, password } }) => {
+    const targetUser = await prisma.user.findFirst({ where: { email } });
+
+    if (!!targetUser) {
+      const newHashedPassword = await hash(password, 12);
+
+      await prisma.user.update({
+        data: { password: newHashedPassword },
+        where: { email },
+      });
+
+      return "OK";
+    } else {
+      return GENERIC_ERROR_MESSAGE;
+    }
+  });
+
+const auth = router({
+  changePassword,
+  login,
+  sendVerificationCode,
+  signUp,
+  verifyCode,
+  verifyToken,
+});
 
 export const inertiionRouter = router({ auth });

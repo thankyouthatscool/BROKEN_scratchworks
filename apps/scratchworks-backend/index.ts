@@ -7,6 +7,7 @@ import express from "express";
 import { exit } from "process";
 
 import { appRouter, createContext } from "@router";
+
 import { updateAppApiUrl } from "@utils";
 
 export { User } from "@prisma/client";

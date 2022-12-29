@@ -28,3 +28,44 @@ export type SignUpFormTextInputProps = {
   control: Control<SignUpFormProps>;
   name: SignUpFormFieldNames;
 };
+
+// Forgot Password Form
+// Email
+export type ForgotPasswordFormEmailProps = {
+  email: string;
+};
+
+export type ForgotPasswordFormEmailFieldNames =
+  keyof ForgotPasswordFormEmailProps;
+
+export type ForgotPasswordFormEmailTextInputProps = {
+  control: Control<ForgotPasswordFormEmailProps>;
+  name: ForgotPasswordFormEmailFieldNames;
+};
+
+// Code
+export type ForgotPasswordFormCodeProps = {
+  code: string;
+};
+
+export type ForgotPasswordFormCodeFieldNames =
+  keyof ForgotPasswordFormCodeProps;
+
+export type ForgotPasswordFormCodeTextInputProps = {
+  control: Control<ForgotPasswordFormCodeProps>;
+  name: ForgotPasswordFormCodeFieldNames;
+};
+
+// Password
+export type ForgotPasswordFormPasswordProps = {
+  password: string;
+  passwordConfirmation: string;
+};
+
+export type ForgotPasswordFormPasswordFieldNames =
+  keyof ForgotPasswordFormPasswordProps;
+
+export type ForgotPasswordFormPasswordTextInputProps = {
+  control: Control<ForgotPasswordFormPasswordProps>;
+  name: ForgotPasswordFormPasswordFieldNames;
+};

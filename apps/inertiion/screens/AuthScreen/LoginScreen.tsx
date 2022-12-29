@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ComponentPropsWithoutRef, useState } from "react";
+import * as SecureStore from "expo-secure-store";
+import { ComponentPropsWithoutRef, useEffect, useState } from "react";
 import { SubmitHandler, useController, useForm } from "react-hook-form";
 import { View } from "react-native";
 import { z } from "zod";
@@ -9,14 +10,17 @@ import { ButtonBase } from "@components/Button/ButtonBase";
 import { ErrorMessageText } from "@components/ErrorMessageText";
 import { ScreenContainer } from "@components/ScreenContainer";
 import { TextInputBase } from "@components/TextInput/TextInputBase";
+import { useAppDispatch, useAppSelector, useToast } from "@hooks";
+import { setLoading, setUser } from "@store";
 import { APP_PADDING, AUTH_SCREEN_IMAGE_HEIGHT } from "@theme";
 import {
   LoginScreenProps,
   AuthTextInputProps,
+  LocalUser,
   LogInFormProps,
   LogInFormTextInputProps,
 } from "@types";
-import { lookupImageSize } from "@utils";
+import { lookupImageSize, trpc } from "@utils";
 
 const { imageHeight, imageWidth } = lookupImageSize("signIn");
 
@@ -27,7 +31,18 @@ const loginFormSchema = z.object({
     .min(8, { message: "Password is required - 8 chars min." }),
 });
 
-export const LoginScreen = ({ navigation }: LoginScreenProps) => {
+export const LoginScreen = ({
+  navigation,
+  route: { params },
+}: LoginScreenProps) => {
+  const [emailAddressCopy, setEmailAddressCopy] = useState<string>("");
+
+  const { showToast } = useToast();
+
+  const dispatch = useAppDispatch();
+
+  const { loading } = useAppSelector(({ app }) => app);
+
   const {
     clearErrors,
     control,
@@ -35,18 +50,52 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
     handleSubmit,
     reset,
     resetField,
+    setValue,
   } = useForm<LogInFormProps>({
     mode: "onTouched",
     resolver: zodResolver(loginFormSchema),
   });
 
+  const { mutateAsync: loginMutateAsync } =
+    trpc.inertiion.auth.login.useMutation();
+
   const onSubmit: SubmitHandler<LogInFormProps> = async ({
     email,
     password,
   }) => {
-    console.log(email);
-    console.log(password);
+    dispatch(setLoading(true));
+
+    const res = await loginMutateAsync({ email, password });
+
+    if (typeof res === "string") {
+      showToast({ message: res });
+
+      resetField("password");
+    } else {
+      const token = res.token;
+
+      await SecureStore.setItemAsync("token", token);
+
+      const userData = res.userData as LocalUser;
+
+      dispatch(setUser({ email: userData.email, id: userData.id }));
+
+      showToast({ message: "Successfully logged in!" });
+
+      reset();
+      clearErrors();
+
+      navigation.navigate("HomeScreen");
+    }
+
+    dispatch(setLoading(false));
   };
+
+  useEffect(() => {
+    if (params?.email) {
+      setValue("email", params.email);
+    }
+  }, [params]);
 
   return (
     <ScreenContainer>
@@ -62,13 +111,18 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
         />
       </View>
       <LoginFormTextInput
+        additionalOnChange={(text) => {
+          setEmailAddressCopy(() => text);
+        }}
         control={control}
+        editable={!loading}
         keyboardType="email-address"
         name="email"
         placeholder="Email"
       />
       <LoginFormTextInput
         control={control}
+        editable={!loading}
         name="password"
         placeholder="Password"
         secure
@@ -88,8 +142,11 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
           }}
         >
           <ButtonBase
+            disabled={!!loading}
             onPress={() => {
-              navigation.navigate("ForgotPasswordScreen", {});
+              navigation.navigate("ForgotPasswordScreen", {
+                email: emailAddressCopy || params?.email,
+              });
             }}
             title="Forgot Password"
             type="secondary"
@@ -97,14 +154,20 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
         </View>
         <View style={{ flexDirection: "row" }}>
           <ButtonBase
+            disabled={!!loading || !!errors["email"]}
             marginRight
             onPress={() => {
-              navigation.navigate("SignUpScreen", {});
+              navigation.navigate("SignUpScreen", {
+                email: emailAddressCopy || params?.email,
+              });
+
+              resetField("password");
+              clearErrors();
             }}
             title="Sign Up"
           />
           <ButtonBase
-            disabled={!!errors["email"] || !!errors["password"]}
+            disabled={!!loading || !!errors["email"] || !!errors["password"]}
             onPress={handleSubmit(onSubmit)}
             title="Login"
           />
