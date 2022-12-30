@@ -9,5 +9,6 @@ export * from "./ErrorMessageText";
 export * from "./FooterContainer";
 
 export * from "./ScreenContainer";
+export * from "./ScreenHeader";
 
 export * from "./TextInput";

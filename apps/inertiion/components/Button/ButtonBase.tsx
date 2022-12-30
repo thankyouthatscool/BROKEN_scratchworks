@@ -15,6 +15,7 @@ import {
 export const ButtonBase = ({
   children,
   disabled,
+  marginBottom,
   marginRight,
   size,
   title,
@@ -22,6 +23,7 @@ export const ButtonBase = ({
   ...props
 }: {
   size?: "sm" | "default" | "lg";
+  marginBottom?: boolean;
   marginRight?: boolean;
   type?: "primary" | "secondary" | "danger";
   title: string;
@@ -71,7 +73,9 @@ export const ButtonBase = ({
             : GRAY_600,
         borderRadius: BORDER_RADIUS,
         borderWidth: 2,
+        marginBottom: marginBottom ? APP_PADDING : 0,
         marginRight: marginRight ? APP_PADDING : 0,
+
         padding: APP_PADDING,
       })}
     >
