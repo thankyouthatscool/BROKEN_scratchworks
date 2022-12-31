@@ -19,6 +19,7 @@ export const ButtonBase = ({
   marginRight,
   size,
   title,
+  style,
   type,
   ...props
 }: {
@@ -41,10 +42,14 @@ export const ButtonBase = ({
         setIsPressed(() => false);
       }}
       style={({ pressed }) => ({
+        // @ts-ignore
+        ...style,
         backgroundColor:
           type === "danger"
             ? disabled
               ? GRAY_200
+              : pressed
+              ? "red"
               : "red"
             : type === "secondary"
             ? disabled

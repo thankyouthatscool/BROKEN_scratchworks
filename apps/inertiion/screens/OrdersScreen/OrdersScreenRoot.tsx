@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef } from "react";
+import { ComponentPropsWithoutRef, useEffect } from "react";
 import { Button, Pressable, Text, View } from "react-native";
 
 import { ScreenContainer } from "@components/ScreenContainer";
@@ -6,8 +6,17 @@ import { ScreenHeader } from "@components/ScreenHeader";
 import { TextInputBase } from "@components/TextInput/TextInputBase";
 import { APP_PADDING } from "@/theme";
 import { OrdersScreenRootProps } from "@types";
+import { getLocalOrders } from "@utils";
 
 export const OrdersScreenRoot = ({ navigation }: OrdersScreenRootProps) => {
+  const handleLoadLocalOrders = async () => {
+    const localOrders = await getLocalOrders();
+  };
+
+  useEffect(() => {
+    handleLoadLocalOrders();
+  }, []);
+
   return (
     <ScreenContainer>
       <ScreenHeader>

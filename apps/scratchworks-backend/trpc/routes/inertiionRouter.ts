@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import sgMail from "@sendgrid/mail";
+import AWS from "aws-sdk";
 import { compare, hash } from "bcryptjs";
 import { sign, verify } from "jsonwebtoken";
 import { z } from "zod";
@@ -24,6 +25,7 @@ const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY!;
 
 sgMail.setApiKey(SENDGRID_API_KEY);
 
+// Auth
 const login = publicProcedure
   .input(loginInput)
   .mutation(async ({ input: { email, password } }) => {
@@ -235,4 +237,75 @@ const auth = router({
   verifyToken,
 });
 
-export const inertiionRouter = router({ auth });
+// Orders
+const uploadOrderImageInput = z.object({ imageName: z.string() });
+
+const analyzeOrderImageInput = z.object({ imageName: z.string() });
+
+export const uploadOrderImage = publicProcedure
+  .input(uploadOrderImageInput)
+  .mutation(async ({ input: { imageName } }) => {
+    const s3 = new AWS.S3({
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
+      signatureVersion: "v4",
+    });
+
+    const signedUrl = s3.getSignedUrl("putObject", {
+      Bucket: "grace-test-orders",
+      Key: `${imageName}.jpg`,
+      Expires: 60 * 5,
+    });
+
+    return signedUrl;
+  });
+
+export const analyzeOrderImage = publicProcedure
+  .input(analyzeOrderImageInput)
+  .mutation(async ({ input: { imageName } }) => {
+    const textract = new AWS.Textract({
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
+      signatureVersion: "v4",
+      region: "us-east-1",
+    });
+
+    const getTextData = (imageName: string) => {
+      return new Promise<AWS.Textract.BlockList>((resolve, reject) => {
+        textract.analyzeDocument(
+          {
+            Document: {
+              S3Object: {
+                Bucket: "grace-test-orders",
+                Name: `${imageName}.jpg`,
+              },
+            },
+            FeatureTypes: ["TABLES"],
+          },
+          (err, data) => {
+            if (err) {
+              reject(new Error("Could not extract text."));
+            } else {
+              resolve(data.Blocks!);
+            }
+          }
+        );
+      });
+    };
+
+    try {
+      const textBlocks = await getTextData(imageName);
+
+      return textBlocks;
+    } catch {
+      throw new Error("Could not extract text.");
+    }
+  });
+
+const order = router({ analyzeOrderImage, uploadOrderImage });
+
+export const inertiionRouter = router({ auth, order });

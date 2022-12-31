@@ -18,22 +18,27 @@ interface ShowToastProps {
   };
 }
 
+const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again later.";
+
 export const useToast = () => {
   return {
     showToast: ({ message, options }: ShowToastProps) => {
-      Toast.show(message, {
-        ...defaultToastSettings,
-        animation: !!options?.animation,
+      Toast.show(
+        message === "GENERIC_ERROR_MESSAGE" ? GENERIC_ERROR_MESSAGE : message,
+        {
+          ...defaultToastSettings,
+          animation: !!options?.animation,
 
-        duration:
-          typeof options?.duration === "number"
-            ? options.duration
-            : options?.duration === "long"
-            ? Toast.durations.LONG
-            : Toast.durations.SHORT,
-        hideOnPress: !!options?.hideOnPress,
-        shadow: !!options?.shadow,
-      });
+          duration:
+            typeof options?.duration === "number"
+              ? options.duration
+              : options?.duration === "long"
+              ? Toast.durations.LONG
+              : Toast.durations.SHORT,
+          hideOnPress: !!options?.hideOnPress,
+          shadow: !!options?.shadow,
+        }
+      );
     },
   };
 };
