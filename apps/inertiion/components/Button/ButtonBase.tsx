@@ -1,3 +1,4 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { ComponentPropsWithoutRef, useState } from "react";
 import { Pressable, Text } from "react-native";
 
@@ -15,6 +16,7 @@ import {
 export const ButtonBase = ({
   children,
   disabled,
+  icon,
   marginBottom,
   marginRight,
   size,
@@ -23,11 +25,12 @@ export const ButtonBase = ({
   type,
   ...props
 }: {
-  size?: "sm" | "default" | "lg";
+  icon?: "delete";
   marginBottom?: boolean;
   marginRight?: boolean;
-  type?: "primary" | "secondary" | "danger";
+  size?: "sm" | "default" | "lg";
   title: string;
+  type?: "primary" | "secondary" | "danger";
 } & ComponentPropsWithoutRef<typeof Pressable>) => {
   const [isPressed, setIsPressed] = useState<boolean>(false);
 
@@ -44,7 +47,9 @@ export const ButtonBase = ({
       style={({ pressed }) => ({
         // @ts-ignore
         ...style,
+        alignItems: "center",
         backgroundColor:
+          // FIXME: Whatever this mess is.
           type === "danger"
             ? disabled
               ? GRAY_200
@@ -78,12 +83,20 @@ export const ButtonBase = ({
             : GRAY_600,
         borderRadius: BORDER_RADIUS,
         borderWidth: 2,
+        flexDirection: "row",
         marginBottom: marginBottom ? APP_PADDING : 0,
         marginRight: marginRight ? APP_PADDING : 0,
-
         padding: APP_PADDING,
       })}
     >
+      {!!icon && (
+        <MaterialIcons
+          color="white"
+          name="delete-forever"
+          size={16}
+          style={{ marginRight: APP_PADDING }}
+        />
+      )}
       <Text
         style={{
           color:
@@ -93,6 +106,8 @@ export const ButtonBase = ({
               ? BUTTON_TEXT_SIZE_SMALL
               : size === "lg"
               ? BUTTON_TEXT_SIZE_LARGE
+              : !!icon
+              ? BUTTON_TEXT_SIZE_DEFAULT * 0.8
               : BUTTON_TEXT_SIZE_DEFAULT,
           fontWeight: "500",
         }}

@@ -1,4 +1,5 @@
 // Gray
+export const GRAY_50 = "#F9FAFB";
 export const GRAY_100 = "#F9FAFB";
 export const GRAY_200 = "#E5E7EB";
 export const GRAY_400 = "#9CA3AF";

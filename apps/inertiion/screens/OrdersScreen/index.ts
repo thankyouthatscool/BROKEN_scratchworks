@@ -1,3 +1,5 @@
+export * from "./EditOrderScreen";
+
 export * from "./NewOrderScreen";
 
 export * from "./OrdersScreen";

@@ -1,11 +1,12 @@
 import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
 
 import { appSlice } from "./appSlice";
+import { ordersSlice } from "./ordersSlice";
 
 export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),
-  reducer: { app: appSlice.reducer },
+  reducer: { app: appSlice.reducer, orders: ordersSlice.reducer },
 });
 
 export type AppDispatch = typeof store.dispatch;

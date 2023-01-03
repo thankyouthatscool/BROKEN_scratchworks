@@ -1,7 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { OrdersScreenRoot } from "@screens/OrdersScreen/OrdersScreenRoot";
+import { EditOrderScreen } from "./EditOrderScreen";
 import { NewOrderScreen } from "@screens/OrdersScreen/NewOrderScreen";
+import { OrdersScreenRoot } from "@screens/OrdersScreen/OrdersScreenRoot";
 import { OrdersScreenNavigatorProps } from "@types";
 
 const OrderScreenStack =
@@ -13,6 +14,10 @@ export const OrdersScreen = () => {
       initialRouteName="OrdersScreenRoot"
       screenOptions={{ animation: "slide_from_right", headerShown: false }}
     >
+      <OrderScreenStack.Screen
+        component={EditOrderScreen}
+        name="EditOrderScreen"
+      />
       <OrderScreenStack.Screen
         component={OrdersScreenRoot}
         name="OrdersScreenRoot"

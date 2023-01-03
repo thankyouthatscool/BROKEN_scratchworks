@@ -10,17 +10,20 @@ import { ScreenContainer } from "@components/ScreenContainer";
 import { ScreenHeader } from "@components/ScreenHeader";
 import { TextBlockBase } from "@components/TextInput/TextBlockBase";
 import { TextInputBase } from "@components/TextInput/TextInputBase";
-import { useToast } from "@hooks";
+import { useAppDispatch, useToast } from "@hooks";
+import { setLocalOrders } from "@store";
 import { NewOrderScreenRootProps } from "@types";
-import { trpc, updateLocalOrders } from "@utils";
+import { addLocalOrder, trpc } from "@utils";
 import { APP_FONT_SIZE, APP_PADDING, GRAY_600 } from "@theme";
 
 export const NewOrderScreen = ({ navigation }: NewOrderScreenRootProps) => {
   const [currentStep, setCurrentStep] = useState<
     "pickOrderSource" | "verifyOrderDetails"
-  >("verifyOrderDetails");
+  >("pickOrderSource");
 
   const { showToast } = useToast();
+
+  const dispatch = useAppDispatch();
 
   const { mutateAsync: uploadOrderImageMutateAsync } =
     trpc.inertiion.order.uploadOrderImage.useMutation();
@@ -88,20 +91,25 @@ export const NewOrderScreen = ({ navigation }: NewOrderScreenRootProps) => {
 
           return {
             id: UUID.v4() as string,
+            code: undefined,
+            colors: undefined,
             item: itemBlock.Text,
             location,
             quantity,
+            size: undefined,
           };
         });
 
-        await updateLocalOrders({ orderItems: res });
+        const { allLocalStorageOrders, newOrderId } = await addLocalOrder({
+          orderItems: res,
+        });
+
+        dispatch(setLocalOrders(allLocalStorageOrders));
 
         showToast({ message: "Saved! 👍" });
 
-        setCurrentStep(() => "verifyOrderDetails");
+        navigation.navigate("EditOrderScreen", { orderId: newOrderId });
       } else {
-        setCurrentStep(() => "verifyOrderDetails");
-
         throw new Error("No image was picked.");
       }
     } catch (err) {
@@ -180,7 +188,6 @@ export const NewOrderScreen = ({ navigation }: NewOrderScreenRootProps) => {
                 42 items 2.5kg
               </Text>
             </View>
-            <OrderItemForm />
             <OrderItemForm />
           </View>
           <View>
