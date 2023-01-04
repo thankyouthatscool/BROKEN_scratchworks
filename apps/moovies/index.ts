@@ -23,9 +23,9 @@ const main = async () => {
   } else {
     console.log(files);
 
-    console.log("Does that look right?");
+    console.log(`There are ${files.length} files ready to be renamed.`);
 
-    const confirmPromptMessage = "Does that look right?";
+    const confirmPromptMessage = "verifyConfirm";
 
     const res = await inquirer.prompt([
       {

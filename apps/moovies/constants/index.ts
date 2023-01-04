@@ -12,4 +12,4 @@ export const MOVE_DIR = `${DOWNLOADS_DIR}/__MOVE__`;
 export const PLATFORM = platform();
 
 export const SCENE_MOVIE_REGEX =
-  /^(?<title>.*).?(?<year>\d{4}).?(?<remastered>[A-Za-z]+)?.?(\d{3,4})p/;
+  /(?<title>.*).?(?<year>\d{4}).?([A-Za-z]+\.)*(?<resolution>\d{3,4}p)/;
