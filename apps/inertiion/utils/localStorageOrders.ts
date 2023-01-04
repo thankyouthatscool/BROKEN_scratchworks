@@ -58,7 +58,7 @@ export const getLocalOrders = async () => {
   return [];
 };
 
-export const updateLocalOrders = async (updatedOrder: OrderProps) => {
+export const updateLocalStorageOrders = async (updatedOrder: OrderProps) => {
   const localStorageOrdersString = await AsyncStorage.getItem("localOrders");
 
   if (!!localStorageOrdersString) {

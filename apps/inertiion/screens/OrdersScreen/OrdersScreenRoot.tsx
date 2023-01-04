@@ -1,14 +1,8 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { ComponentPropsWithoutRef, useEffect, useState } from "react";
-import {
-  Button,
-  Dimensions,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { Dimensions, Pressable, ScrollView, Text, View } from "react-native";
 
+import { ItemColorsElement } from "@components/ItemColorsElement/ItemColorsElement";
 import { ScreenContainer } from "@components/ScreenContainer";
 import { ScreenHeader } from "@components/ScreenHeader";
 import { TextInputBase } from "@components/TextInput/TextInputBase";
@@ -24,14 +18,14 @@ import {
   GRAY_800,
 } from "@theme";
 import { OrderProps, OrdersScreenRootProps } from "@types";
-import { getLocalOrders } from "@utils";
+import { colorLookup, getLocalOrders } from "@utils";
 
-type Nav = Pick<OrdersScreenRootProps, "navigation">;
+type Nav = Pick<OrdersScreenRootProps, "navigation">["navigation"];
 
 const { height } = Dimensions.get("window");
 
 export const OrdersScreenRoot = ({ navigation }: OrdersScreenRootProps) => {
-  const [screenElementsHeights, setScreenElementsHeights] = useState({
+  const [screenElementsHeights] = useState({
     header: 35,
     searchBox: 44,
   });
@@ -50,11 +44,7 @@ export const OrdersScreenRoot = ({ navigation }: OrdersScreenRootProps) => {
 
   return (
     <ScreenContainer>
-      <ScreenHeader
-        onLayout={(e) =>
-          console.log(JSON.stringify(e.nativeEvent.layout.height))
-        }
-      >
+      <ScreenHeader>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Pressable
             onPress={() => {
@@ -71,7 +61,13 @@ export const OrdersScreenRoot = ({ navigation }: OrdersScreenRootProps) => {
               size={34}
               style={{ marginLeft: -12 }}
             />
-            <Text style={{ color: GRAY_600, fontSize: APP_FONT_SIZE * 1.5 }}>
+            <Text
+              style={{
+                color: GRAY_600,
+                fontSize: APP_FONT_SIZE * 1.5,
+                fontWeight: "500",
+              }}
+            >
               All Orders
             </Text>
           </Pressable>
@@ -88,7 +84,7 @@ export const OrdersScreenRoot = ({ navigation }: OrdersScreenRootProps) => {
           </Pressable>
         </View>
       </ScreenHeader>
-      <TextInputBase placeholder="Search" style={{ elevation: 2 }} />
+      <TextInputBase placeholder="Search" style={{ elevation: 2, zIndex: 1 }} />
       <ScrollView
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
@@ -122,7 +118,7 @@ export const OrdersScreenRoot = ({ navigation }: OrdersScreenRootProps) => {
 type OrderStateCategoryToggleProps = {
   onChildPress: (orderId: string) => void;
   onChildLongPress: (orderId: string) => void;
-  nav: Nav["navigation"];
+  nav: Nav;
   title: string;
 };
 
@@ -134,7 +130,7 @@ const OrderStateCategoryToggle = ({
   ...props
 }: OrderStateCategoryToggleProps &
   ComponentPropsWithoutRef<typeof Pressable>) => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(title === "Pending");
 
   const { localOrders } = useAppSelector(({ orders }) => orders);
 
@@ -188,7 +184,7 @@ const OrderStateCategoryToggle = ({
             width: 25,
           }}
         >
-          <Text style={{ color: GRAY_600 }}>
+          <Text style={{ color: GRAY_600, fontWeight: "500" }}>
             {localOrders.filter(
               (order) => order.orderStatus === title.toLowerCase()
             ).length || ""}
@@ -202,11 +198,10 @@ const OrderStateCategoryToggle = ({
             key={order.orderId}
             isExpanded={isExpanded}
             onChildPress={(id) => {
-              console.log(`Press ${id}`);
+              nav.navigate("OrderDetailsScreen", { orderId: id });
             }}
             onChildLongPress={(id) => {
-              console.log(`Long press ${id}`);
-              nav.navigate("EditOrderScreen", { orderId: id });
+              nav.navigate("EditOrderScreen", { action: "edit", orderId: id });
             }}
             orderDetails={order}
           />
@@ -238,6 +233,7 @@ export const OrderCard = ({
           onLongPress={() => {
             onChildLongPress(orderDetails.orderId);
           }}
+          delayLongPress={370 / 1.25}
           style={({ pressed }) => ({
             backgroundColor: "white",
             borderColor: pressed ? GRAY_200 : "white",
@@ -274,12 +270,6 @@ export const OrderCard = ({
               <View key={orderItem.id} style={{ flexDirection: "row" }}>
                 <Text style={{ width: 40 }}>{orderItem.quantity}</Text>
                 <Text style={{ width: 70 }}>{orderItem.code}</Text>
-                {/* <Text
-                  numberOfLines={1}
-                  style={{ width: 100, overflow: "scroll" }}
-                >
-                  {orderItem.colors}
-                </Text> */}
                 <ItemColorsElement colors={orderItem.colors || ""} />
                 <Text style={{ width: 50 }}> {orderItem.size}</Text>
                 <Text
@@ -299,59 +289,4 @@ export const OrderCard = ({
       )}
     </View>
   );
-};
-
-type ItemColorsElementProps = { colors: string };
-
-const ItemColorsElement = ({ colors }: ItemColorsElementProps) => {
-  const colorArray = colors.split(", ").map((color) => color.trim());
-
-  return (
-    <View style={{ width: 100, flexDirection: "row" }}>
-      {colorArray.map((color) => {
-        console.log(color);
-
-        return (
-          <View
-            style={{
-              backgroundColor: colorLookup(color).background,
-              borderColor: colorLookup(color).border,
-              borderWidth: 1,
-              borderRadius: 20,
-              marginRight: APP_PADDING / 2,
-              height: 15,
-              width: 15,
-            }}
-          />
-        );
-      })}
-    </View>
-  );
-};
-
-const colorLookup = (color: string) => {
-  switch (color.toLowerCase()) {
-    case "black":
-    case "blk":
-      return { background: "black", border: "black" };
-    case "dark grey":
-    case "dark gray":
-    case "dkg":
-      return { background: GRAY_800, border: GRAY_800 };
-    case "natural":
-    case "nat":
-      return { background: "#F3EED8", border: "#F3EED8" };
-    case "dark navy":
-    case "dk navy":
-      return { background: "#1D2545", border: "#1D2545" };
-    case "navy":
-      return { background: "#000080", border: "#000080" };
-    case "red":
-      return { background: "red", border: "red" };
-    case "white":
-    case "wh":
-      return { background: "white", border: "black" };
-    default:
-      return { background: "white", border: "black" };
-  }
 };

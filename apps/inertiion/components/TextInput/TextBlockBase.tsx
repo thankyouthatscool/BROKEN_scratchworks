@@ -10,6 +10,8 @@ export const TextBlockBase = ({
   return (
     <View
       style={{
+        // @ts-ignore
+        ...style,
         backgroundColor: "white",
         padding: APP_PADDING,
       }}

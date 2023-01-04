@@ -22,9 +22,10 @@ export type HomeScreenNavigatorProps = {
 };
 
 export type OrdersScreenNavigatorProps = {
-  EditOrderScreen: { orderId: string };
+  EditOrderScreen: { action: "create" | "edit"; orderId: string };
   NewOrderScreen: undefined;
   OrdersScreenRoot: undefined;
+  OrderDetailsScreen: { orderId: string };
 };
 
 // Screens
@@ -73,6 +74,14 @@ export type NewOrderScreenRootProps = CompositeScreenProps<
 export type EditOrderScreenRootProps = CompositeScreenProps<
   CompositeScreenProps<
     NativeStackScreenProps<OrdersScreenNavigatorProps, "EditOrderScreen">,
+    DrawerScreenProps<RootNavigatorProps>
+  >,
+  HomeScreenRootProps
+>;
+
+export type OrderDetailsScreenRootProps = CompositeScreenProps<
+  CompositeScreenProps<
+    NativeStackScreenProps<OrdersScreenNavigatorProps, "OrderDetailsScreen">,
     DrawerScreenProps<RootNavigatorProps>
   >,
   HomeScreenRootProps

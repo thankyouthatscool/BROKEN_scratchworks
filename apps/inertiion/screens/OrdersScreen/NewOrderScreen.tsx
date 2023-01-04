@@ -108,7 +108,10 @@ export const NewOrderScreen = ({ navigation }: NewOrderScreenRootProps) => {
 
         showToast({ message: "Saved! 👍" });
 
-        navigation.navigate("EditOrderScreen", { orderId: newOrderId });
+        navigation.navigate("EditOrderScreen", {
+          action: "create",
+          orderId: newOrderId,
+        });
       } else {
         throw new Error("No image was picked.");
       }

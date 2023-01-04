@@ -8,6 +8,8 @@ export * from "./ErrorMessageText";
 
 export * from "./FooterContainer";
 
+export * from "./ItemColorsElement";
+
 export * from "./ScreenContainer";
 export * from "./ScreenHeader";
 

@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { EditOrderScreen } from "./EditOrderScreen";
+import { OrderDetailsScreen } from "@screens/OrdersScreen/OrderDetailsScreen";
 import { NewOrderScreen } from "@screens/OrdersScreen/NewOrderScreen";
 import { OrdersScreenRoot } from "@screens/OrdersScreen/OrdersScreenRoot";
 import { OrdersScreenNavigatorProps } from "@types";
@@ -17,6 +18,10 @@ export const OrdersScreen = () => {
       <OrderScreenStack.Screen
         component={EditOrderScreen}
         name="EditOrderScreen"
+      />
+      <OrderScreenStack.Screen
+        component={OrderDetailsScreen}
+        name="OrderDetailsScreen"
       />
       <OrderScreenStack.Screen
         component={OrdersScreenRoot}
