@@ -15,6 +15,7 @@ export type OrderItemProps = {
 };
 
 export type OrderProps = {
+  deliveryAddress: string | undefined;
   deliveryMethod: string | undefined;
   orderId: string;
   orderItems: OrderItemProps[];

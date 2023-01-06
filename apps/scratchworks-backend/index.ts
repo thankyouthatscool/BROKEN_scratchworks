@@ -41,10 +41,10 @@ const main = async () => {
     console.log("Running in dev...");
 
     try {
-      const res = await axios.get("http://127.0.0.1:4040/api/tunnels");
-      const tunnelPublicUrl = res.data.tunnels[0].public_url;
+      // const res = await axios.get("http://127.0.0.1:4040/api/tunnels");
+      // const tunnelPublicUrl = res.data.tunnels[0].public_url;
 
-      updateAppApiUrl(tunnelPublicUrl);
+      // updateAppApiUrl(tunnelPublicUrl);
 
       startServer(5001);
     } catch (err) {

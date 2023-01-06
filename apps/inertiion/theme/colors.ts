@@ -1,4 +1,8 @@
-// Gray
+// Greens
+
+export const GREEN_600 = "#16A34A";
+
+// Grays
 export const GRAY_50 = "#F9FAFB";
 export const GRAY_100 = "#F9FAFB";
 export const GRAY_200 = "#E5E7EB";

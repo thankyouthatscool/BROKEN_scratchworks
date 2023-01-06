@@ -18,7 +18,6 @@ export type AuthScreenNavigatorProps = {
 export type HomeScreenNavigatorProps = {
   HomeScreenRoot: undefined;
   OrdersScreen: undefined;
-  PickOrderScreen: undefined;
 };
 
 export type OrdersScreenNavigatorProps = {
@@ -26,6 +25,7 @@ export type OrdersScreenNavigatorProps = {
   NewOrderScreen: undefined;
   OrdersScreenRoot: undefined;
   OrderDetailsScreen: { orderId: string };
+  PickOrdersScreen: { source?: "root" };
 };
 
 // Screens
@@ -82,6 +82,14 @@ export type EditOrderScreenRootProps = CompositeScreenProps<
 export type OrderDetailsScreenRootProps = CompositeScreenProps<
   CompositeScreenProps<
     NativeStackScreenProps<OrdersScreenNavigatorProps, "OrderDetailsScreen">,
+    DrawerScreenProps<RootNavigatorProps>
+  >,
+  HomeScreenRootProps
+>;
+
+export type PickOrdersScreenRootProps = CompositeScreenProps<
+  CompositeScreenProps<
+    NativeStackScreenProps<OrdersScreenNavigatorProps, "PickOrdersScreen">,
     DrawerScreenProps<RootNavigatorProps>
   >,
   HomeScreenRootProps

@@ -7,7 +7,7 @@ import { ScreenContainer } from "@components/ScreenContainer";
 import { ScreenHeader } from "@components/ScreenHeader";
 import { TextInputBase } from "@components/TextInput/TextInputBase";
 import { useAppDispatch, useAppSelector } from "@hooks";
-import { setLocalOrders } from "@store";
+import { clearPickQueue, clearPickedItems, setLocalOrders } from "@store";
 import {
   APP_FONT_SIZE,
   APP_PADDING,
@@ -15,10 +15,9 @@ import {
   GRAY_200,
   GRAY_400,
   GRAY_600,
-  GRAY_800,
 } from "@theme";
 import { OrderProps, OrdersScreenRootProps } from "@types";
-import { colorLookup, getLocalOrders } from "@utils";
+import { getLocalOrders } from "@utils";
 
 type Nav = Pick<OrdersScreenRootProps, "navigation">["navigation"];
 
@@ -31,6 +30,8 @@ export const OrdersScreenRoot = ({ navigation }: OrdersScreenRootProps) => {
   });
 
   const dispatch = useAppDispatch();
+
+  const { pickQueue } = useAppSelector(({ orders }) => orders);
 
   const handleLoadLocalOrders = async () => {
     const localOrders = await getLocalOrders();
@@ -71,17 +72,36 @@ export const OrdersScreenRoot = ({ navigation }: OrdersScreenRootProps) => {
               All Orders
             </Text>
           </Pressable>
-          <Pressable
-            onPress={() => {
-              navigation.navigate("NewOrderScreen");
-            }}
-          >
-            <MaterialIcons
-              color={GRAY_600}
-              name="add-circle-outline"
-              size={34.5}
-            />
-          </Pressable>
+          <View style={{ flexDirection: "row" }}>
+            <Pressable
+              onPress={() => {
+                navigation.navigate("NewOrderScreen");
+              }}
+            >
+              <MaterialIcons
+                color={GRAY_600}
+                name="add-circle-outline"
+                size={34.5}
+                style={{ marginRight: APP_PADDING }}
+              />
+            </Pressable>
+            <Pressable>
+              <MaterialIcons
+                color={!!pickQueue.length ? GRAY_600 : GRAY_200}
+                name="store"
+                onLongPress={() => {
+                  dispatch(clearPickQueue());
+                  dispatch(clearPickedItems());
+                }}
+                onPress={() => {
+                  if (!!pickQueue.length) {
+                    navigation.navigate("PickOrdersScreen", { source: "root" });
+                  }
+                }}
+                size={34.5}
+              />
+            </Pressable>
+          </View>
         </View>
       </ScreenHeader>
       <TextInputBase placeholder="Search" style={{ elevation: 2, zIndex: 1 }} />
@@ -132,7 +152,7 @@ const OrderStateCategoryToggle = ({
   ComponentPropsWithoutRef<typeof Pressable>) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(title === "Pending");
 
-  const { localOrders } = useAppSelector(({ orders }) => orders);
+  const { localOrders, pickQueue } = useAppSelector(({ orders }) => orders);
 
   const [isLength, setIsLength] = useState<boolean>(
     !!localOrders.filter((order) => order.orderStatus === title.toLowerCase())
@@ -195,8 +215,9 @@ const OrderStateCategoryToggle = ({
         .filter((order) => order.orderStatus === title.toLowerCase())
         .map((order) => (
           <OrderCard
-            key={order.orderId}
+            inQueue={pickQueue.includes(order.orderId)}
             isExpanded={isExpanded}
+            key={order.orderId}
             onChildPress={(id) => {
               nav.navigate("OrderDetailsScreen", { orderId: id });
             }}
@@ -211,6 +232,7 @@ const OrderStateCategoryToggle = ({
 };
 
 type OrderCardProps = {
+  inQueue: boolean;
   isExpanded: boolean;
   onChildPress: (id: string) => void;
   onChildLongPress: (id: string) => void;
@@ -218,12 +240,25 @@ type OrderCardProps = {
 };
 
 export const OrderCard = ({
+  inQueue,
   isExpanded,
   onChildPress,
   onChildLongPress,
   orderDetails,
   ...props
 }: OrderCardProps & ComponentPropsWithoutRef<typeof Pressable>) => {
+  const { pickedItems } = useAppSelector(({ orders }) => orders);
+
+  const [isComplete, setIsComplete] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsComplete(() =>
+      orderDetails.orderItems
+        .map((item) => item.id)
+        .every((item) => pickedItems.map((item) => item.id).includes(item))
+    );
+  }, [pickedItems]);
+
   return (
     <View>
       {isExpanded ? (
@@ -236,7 +271,13 @@ export const OrderCard = ({
           delayLongPress={370 / 1.25}
           style={({ pressed }) => ({
             backgroundColor: "white",
-            borderColor: pressed ? GRAY_200 : "white",
+            borderColor: pressed
+              ? GRAY_200
+              : isComplete
+              ? "green"
+              : inQueue
+              ? GRAY_400
+              : "white",
             borderWidth: 2,
             marginTop: APP_PADDING,
             padding: APP_PADDING - 2,

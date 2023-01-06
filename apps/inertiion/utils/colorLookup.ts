@@ -5,13 +5,12 @@ export const colorLookup = (color: string) => {
     // Black
     case "black":
     case "blk":
-      return { background: "black", border: "black" };
-
+      return colorFormat("black");
     // Greys
     case "dark grey":
     case "dark gray":
     case "dkg":
-      return { background: GRAY_800, border: GRAY_800 };
+      return colorFormat(GRAY_800);
 
     // Gold
     case "gold":
@@ -24,18 +23,20 @@ export const colorLookup = (color: string) => {
     // Natural
     case "natural":
     case "nat":
-      return { background: "#F3EED8", border: "#F3EED8" };
+      return colorFormat("#F3EED8");
 
     // Blues
     case "dark navy":
     case "dk navy":
-      return { background: "#1D2545", border: "#1D2545" };
+      return colorFormat("#1D2545");
     case "navy":
-      return { background: "#000080", border: "#000080" };
+      return colorFormat("#000080");
+    case "roy":
     case "royal":
-      return { background: "#4169E1", border: "#4169E1" };
+      return colorFormat("#4169E1");
     case "sky blue":
       return colorFormat("#77C4FE");
+
     // Pinks
     case "pink":
       return colorFormat("#FFC0CB");
@@ -44,7 +45,7 @@ export const colorLookup = (color: string) => {
 
     // Reds
     case "red":
-      return { background: "#FF0000", border: "#FF0000" };
+      return colorFormat("#FF0000");
 
     // White
     case "white":
@@ -55,6 +56,6 @@ export const colorLookup = (color: string) => {
   }
 };
 
-const colorFormat = (hexColorString: string) => {
-  return { background: hexColorString, border: hexColorString };
+const colorFormat = (colorString: string) => {
+  return { background: colorString, border: colorString };
 };

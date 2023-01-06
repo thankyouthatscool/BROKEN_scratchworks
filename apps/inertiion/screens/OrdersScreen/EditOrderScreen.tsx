@@ -1,6 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import UUID from "react-native-uuid";
 
 import { ButtonBase } from "@components/Button/ButtonBase";
 import { ScreenContainer } from "@components/ScreenContainer";
@@ -23,11 +24,12 @@ export const EditOrderScreen = ({
 
   const { localOrders } = useAppSelector(({ orders }) => orders);
 
-  const [selectedOrder, setSelectedOrder] = useState<OrderProps | undefined>(
-    localOrders.find((order) => order.orderId === orderId)
-  );
+  const [deliveryAddress, setDeliveryAddress] = useState<string>("");
   const [deliveryMethod, setDeliveryMethod] = useState<string | undefined>(
     undefined
+  );
+  const [selectedOrder, setSelectedOrder] = useState<OrderProps | undefined>(
+    localOrders.find((order) => order.orderId === orderId)
   );
 
   return (
@@ -55,7 +57,14 @@ export const EditOrderScreen = ({
             </Text>
           </Pressable>
         </ScreenHeader>
-        <TextBlockBase placeholder="Order Address" style={{ elevation: 2 }} />
+        <TextBlockBase
+          defaultValue={selectedOrder?.deliveryAddress}
+          onChangeText={(deliveryAddressString) => {
+            setDeliveryAddress(() => deliveryAddressString);
+          }}
+          placeholder="Delivery Address"
+          style={{ elevation: 2, zIndex: 1 }}
+        />
         <DeliveryMethodComponent
           defaultMethod={selectedOrder?.deliveryMethod}
           onUpdate={async (deliveryMethod) => {
@@ -120,6 +129,26 @@ export const EditOrderScreen = ({
                   quantity: orderItem.quantity!,
                   size: orderItem.size! || itemSize.join(""),
                 }}
+                onOrderItemDelete={() => {
+                  setSelectedOrder((selectedOrder) => {
+                    const selectedOrderItem = selectedOrder?.orderItems.find(
+                      (item) => item.id === orderItem.id
+                    )!;
+
+                    const selectedOrderItemIndex =
+                      selectedOrder?.orderItems.indexOf(selectedOrderItem);
+
+                    const newSelectedOrderItems =
+                      selectedOrder?.orderItems.filter(
+                        (_, index) => index !== selectedOrderItemIndex
+                      )!;
+
+                    return {
+                      ...selectedOrder!,
+                      orderItems: newSelectedOrderItems,
+                    };
+                  });
+                }}
                 onUpdate={(formData) => {
                   setSelectedOrder((selectedOrder) => {
                     const updateOrderItem = selectedOrder?.orderItems.find(
@@ -149,12 +178,39 @@ export const EditOrderScreen = ({
             );
           })}
         <Footer
+          onAdd={() => {
+            const newItemId = UUID.v4() as string;
+
+            setSelectedOrder((selectedOrder) => {
+              return {
+                ...selectedOrder!,
+                orderItems: [
+                  ...selectedOrder?.orderItems!,
+                  {
+                    code: "",
+                    colors: "",
+                    id: newItemId,
+                    item: "",
+                    location: "",
+                    quantity: "",
+                    size: "",
+                  },
+                ],
+              };
+            });
+          }}
+          onAddDisabled={
+            !!selectedOrder?.orderItems.some(
+              (item) => !item.quantity || !item.code || !item.location
+            )
+          }
           onCancel={() => {
             navigation.goBack();
           }}
           onSave={async () => {
             const updatedLocalStorageOrders = await updateLocalStorageOrders({
               ...selectedOrder!,
+              deliveryAddress,
               deliveryMethod,
             });
 
@@ -162,6 +218,11 @@ export const EditOrderScreen = ({
 
             navigation.navigate("OrdersScreenRoot");
           }}
+          onSaveDisabled={
+            !!selectedOrder?.orderItems.some(
+              (item) => !item.quantity || !item.code || !item.location
+            )
+          }
         />
       </ScrollView>
     </ScreenContainer>
@@ -180,11 +241,13 @@ type FormData = {
 
 type OrderItemFormProps = {
   formData: FormData;
+  onOrderItemDelete: () => void;
   onUpdate: (formData: FormData) => void;
 };
 
 const OrderItemForm = ({
   formData: { code, colors, item, itemId, location, quantity, size },
+  onOrderItemDelete,
   onUpdate,
 }: OrderItemFormProps) => {
   const [formData, setFormData] = useState({
@@ -255,9 +318,7 @@ const OrderItemForm = ({
         />
         <ButtonBase
           icon="delete"
-          onPress={() => {
-            console.log(`Will delete ${itemId}`);
-          }}
+          onPress={onOrderItemDelete}
           style={{ width: 80 }}
           title="Delete"
           type="danger"
@@ -329,24 +390,45 @@ const DeliveryMethodComponent = ({
   );
 };
 
-type FooterProps = { onCancel: () => void; onSave: () => void };
+type FooterProps = {
+  onAdd: () => void;
+  onAddDisabled: boolean;
+  onCancel: () => void;
+  onSave: () => void;
+  onSaveDisabled: boolean;
+};
 
-const Footer = ({ onCancel, onSave }: FooterProps) => {
+const Footer = ({
+  onAdd,
+  onAddDisabled,
+  onCancel,
+  onSave,
+  onSaveDisabled,
+}: FooterProps) => {
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "flex-end",
-        marginTop: APP_PADDING,
-      }}
-    >
+    <View style={{ marginTop: APP_PADDING }}>
       <ButtonBase
-        marginRight
-        onPress={onCancel}
-        title="Cancel"
+        disabled={onAddDisabled}
+        onPress={onAdd}
+        style={{ alignSelf: "flex-start" }}
+        title="Add"
         type="secondary"
       />
-      <ButtonBase onPress={onSave} title="Save" />
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          marginTop: APP_PADDING,
+        }}
+      >
+        <ButtonBase
+          marginRight
+          onPress={onCancel}
+          title="Cancel"
+          type="secondary"
+        />
+        <ButtonBase disabled={onSaveDisabled} onPress={onSave} title="Save" />
+      </View>
     </View>
   );
 };

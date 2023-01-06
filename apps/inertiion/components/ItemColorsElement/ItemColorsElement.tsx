@@ -1,3 +1,4 @@
+import { ComponentPropsWithoutRef } from "react";
 import { View } from "react-native";
 
 import { APP_PADDING } from "@theme";
@@ -7,13 +8,24 @@ type ItemColorsElementProps = { colors: string };
 
 const COLOR_ELEMENT_SIZE = 15;
 
-export const ItemColorsElement = ({ colors }: ItemColorsElementProps) => {
+export const ItemColorsElement = ({
+  colors,
+  ...props
+}: ItemColorsElementProps & ComponentPropsWithoutRef<typeof View>) => {
   const colorArray = colors
     .split(",")
     .map((color) => color.trim().toLowerCase());
 
   return (
-    <View style={{ width: 100, flexDirection: "row" }}>
+    <View
+      {...props}
+      style={{
+        // @ts-ignore
+        ...props.style,
+        flexDirection: "row",
+        width: 80,
+      }}
+    >
       {colorArray.map((color, index) => {
         return (
           <View

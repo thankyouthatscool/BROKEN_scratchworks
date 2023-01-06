@@ -4,6 +4,7 @@ import { EditOrderScreen } from "./EditOrderScreen";
 import { OrderDetailsScreen } from "@screens/OrdersScreen/OrderDetailsScreen";
 import { NewOrderScreen } from "@screens/OrdersScreen/NewOrderScreen";
 import { OrdersScreenRoot } from "@screens/OrdersScreen/OrdersScreenRoot";
+import { PickOrdersScreen } from "@screens/OrdersScreen/PickOrdersScreen";
 import { OrdersScreenNavigatorProps } from "@types";
 
 const OrderScreenStack =
@@ -30,6 +31,10 @@ export const OrdersScreen = () => {
       <OrderScreenStack.Screen
         component={NewOrderScreen}
         name="NewOrderScreen"
+      />
+      <OrderScreenStack.Screen
+        component={PickOrdersScreen}
+        name="PickOrdersScreen"
       />
     </OrderScreenStack.Navigator>
   );

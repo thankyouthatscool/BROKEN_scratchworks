@@ -45,8 +45,6 @@ export const ButtonBase = ({
         setIsPressed(() => false);
       }}
       style={({ pressed }) => ({
-        // @ts-ignore
-        ...style,
         alignItems: "center",
         backgroundColor:
           // FIXME: Whatever this mess is.
@@ -87,6 +85,8 @@ export const ButtonBase = ({
         marginBottom: marginBottom ? APP_PADDING : 0,
         marginRight: marginRight ? APP_PADDING : 0,
         padding: APP_PADDING,
+        // @ts-ignore
+        ...style,
       })}
     >
       {!!icon && (
