@@ -6,7 +6,12 @@ module.exports = {
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
-    extra: { API_URL: process.env.API_URL },
+    extra: {
+      API_URL: process.env.API_URL,
+      eas: {
+        projectId: "d6ba2225-1f90-404d-a89b-2d2ecea284db",
+      },
+    },
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",
@@ -24,6 +29,7 @@ module.exports = {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#FFFFFF",
       },
+      package: "com.ozahnitko.inertiion",
     },
     web: {
       favicon: "./assets/favicon.png",
