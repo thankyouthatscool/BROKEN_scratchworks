@@ -16,6 +16,7 @@
     "open:app": "code ./apps/inertiion",
     "open:moovies": "code ./apps/moovies",
     "open:server": "code ./apps/scratchworks-backend",
+    "services:start:prod": "docker compose -f ./apps/scratchworks-backend/docker-compose-prod.yml -p scratchworks-backend-prod up -d",
     "tunnel:start": "ngrok http 5001"
   }
 }

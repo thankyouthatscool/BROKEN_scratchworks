@@ -1,0 +1,11 @@
+{
+  "name": "@inertiion/infrastructure",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "output:private_key:write": "terraform output -raw private_key > key.pem",
+    "terraform:apply:auto": "terraform apply --auto-approve",
+    "terraform:destroy:auto": "terraform destroy --auto-approve"
+  }
+}
