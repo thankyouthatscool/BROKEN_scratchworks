@@ -29,9 +29,9 @@ app.use(
 );
 
 const startServer = async (port?: number) => {
-  const PORT = port || process.env.PORT || 5000;
+  const PORT = port || parseInt(process.env.SERVER_PORT!);
 
-  app.listen(port, () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server is listening on port ${PORT}...`);
   });
 };
