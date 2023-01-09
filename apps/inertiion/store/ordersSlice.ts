@@ -26,6 +26,9 @@ export const ordersSlice = createSlice({
     },
 
     // Pick Queue
+    setPickQueue: (state, { payload }: PayloadAction<string[]>) => {
+      state.pickQueue = payload;
+    },
     addOrderToPickQueue: (state, { payload }: PayloadAction<string>) => {
       state.pickQueue = Array.from(new Set([...state.pickQueue, payload]));
     },
@@ -37,6 +40,9 @@ export const ordersSlice = createSlice({
     },
 
     // Picked Items
+    setPickedItems: (state, { payload }: PayloadAction<OrderItemProps[]>) => {
+      state.pickedItems = payload;
+    },
     addPickedItem: (state, { payload }: PayloadAction<OrderItemProps>) => {
       state.pickedItems = Array.from(new Set([...state.pickedItems, payload]));
     },
@@ -64,11 +70,13 @@ export const {
   setLocalOrders,
 
   // Pick Queue
+  setPickQueue,
   addOrderToPickQueue,
   removerOrderFromPickQueue,
   clearPickQueue,
 
   // Picked Items
+  setPickedItems,
   addPickedItem,
   removePickedItem,
   clearPickedItems,

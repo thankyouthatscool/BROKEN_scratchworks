@@ -18,6 +18,7 @@ export const addLocalOrder = async ({
     const newLocalOrders: OrderProps[] = [
       ...localOrders,
       {
+        deliveryAddress: undefined,
         deliveryMethod: undefined,
         orderId: newOrderId,
         orderItems,
@@ -33,6 +34,7 @@ export const addLocalOrder = async ({
 
     const newLocalOrders: OrderProps[] = [
       {
+        deliveryAddress: undefined,
         deliveryMethod: undefined,
         orderId: newOrderId,
         orderItems,
@@ -85,4 +87,40 @@ export const updateLocalStorageOrders = async (updatedOrder: OrderProps) => {
 
     return newLocalStorageOrders;
   }
+};
+
+// Pick Queue
+export const setPickQueueLocalStorage = async (pickQueue: string[]) => {
+  await AsyncStorage.setItem("pickQueue", JSON.stringify(pickQueue));
+};
+
+export const getPickQueueLocalStorage = async () => {
+  const pickQueueString = await AsyncStorage.getItem("pickQueue");
+
+  if (!!pickQueueString) {
+    const pickQueue: string[] = JSON.parse(pickQueueString);
+
+    return pickQueue;
+  }
+
+  return [];
+};
+
+// Picked Items
+export const setPickedItemsLocalStorage = async (
+  pickedItems: OrderItemProps[]
+) => {
+  await AsyncStorage.setItem("pickedItems", JSON.stringify(pickedItems));
+};
+
+export const getPickedItemsLocalStorage = async () => {
+  const pickedItemsString = await AsyncStorage.getItem("pickedItems");
+
+  if (!!pickedItemsString) {
+    const pickedItems: OrderItemProps[] = JSON.parse(pickedItemsString);
+
+    return pickedItems;
+  }
+
+  return [];
 };

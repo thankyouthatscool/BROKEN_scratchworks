@@ -8,16 +8,33 @@ import { CustomDrawer } from "@components/CustomDrawer";
 import { AuthScreen } from "@screens/AuthScreen";
 import { HomeScreen } from "@screens/HomeScreen";
 
-import { useAppDispatch, useAppSelector, useAuthHooks, useToast } from "@hooks";
-import { clearUser, setUser } from "@store";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useAuthHooks,
+  useOrderHooks,
+  useToast,
+} from "@hooks";
+import {
+  clearUser,
+  setUser,
+  setInitialLoadStatus,
+  setPickQueue,
+  setPickedItems,
+} from "@store";
 import { SPLASH_SCREEN_DELAY } from "@theme";
 import { LocalUser, RootNavigatorProps } from "@types";
-import { trpc } from "@utils";
+import {
+  trpc,
+  getPickQueueLocalStorage,
+  getPickedItemsLocalStorage,
+} from "@utils";
 
 const RootNavigator = createDrawerNavigator<RootNavigatorProps>();
 
 export const AppRoot = () => {
   useAuthHooks();
+  useOrderHooks();
 
   const { showToast } = useToast();
 
@@ -60,6 +77,16 @@ export const AppRoot = () => {
         showToast({ message: "👌", options: { duration: 250 } });
       }
     }
+
+    const [pickQueue, pickedItems] = await Promise.all([
+      getPickQueueLocalStorage(),
+      getPickedItemsLocalStorage(),
+    ]);
+
+    dispatch(setPickQueue(pickQueue));
+    dispatch(setPickedItems(pickedItems));
+
+    dispatch(setInitialLoadStatus(true));
   };
 
   useEffect(() => {
