@@ -7,12 +7,12 @@ import { promisify } from "util";
 const exec = promisify(execCB);
 
 const commandList = [
+  "terraform validate",
   "terraform apply",
   "terraform apply --auto-approve",
-  "terraform validate",
   "terraform destroy",
   "terraform destroy --auto-approve",
-  "get key",
+  "write key to file",
   "connect to instance",
 ] as const;
 
@@ -42,7 +42,7 @@ export const main = async () => {
     return executeCommand(res.command);
   }
 
-  if (res.command === "get key") {
+  if (res.command === "write key to file") {
     return executeCommand("terraform output -raw private_key > key.pem");
   }
 
@@ -51,10 +51,6 @@ export const main = async () => {
   }
 
   if (res.command === "connect to instance") {
-    // const publicDns = await executeCommand("get public dns");
-
-    // console.log(publicDns);
-
     const conn = new Client();
 
     conn
@@ -87,12 +83,6 @@ export const main = async () => {
           console.log(s);
         },
       });
-
-    // const connectionString = `ubuntu@${publicDns?.trim()}`;
-
-    // await executeCommand(`ssh -i key.pem -tt ${connectionString.trim()}`);
-
-    // return;
   }
 };
 

@@ -5,9 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon",
-    "output:private_key:write": "terraform output -raw private_key > key.pem",
-    "terraform:apply:auto": "terraform apply --auto-approve",
-    "terraform:destroy:auto": "terraform destroy --auto-approve"
+    "start": "ts-node --transpile-only --files ./index.ts"
   },
   "dependencies": {
     "inquirer": "7.3.3",
