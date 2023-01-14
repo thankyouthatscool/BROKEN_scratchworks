@@ -75,7 +75,7 @@ export const NewOrderScreen = ({ navigation }: NewOrderScreenRootProps) => {
 
         const itemLineBlocks = lineBlocks.filter((line) => {
           if (line.Text) {
-            return /^[AH|G|IV]{1,2}\d{1,4}\s/gi.test(line.Text);
+            return /^[AH|B|G|IV|STS]{1,2}\d{1,4}\s/gi.test(line.Text);
           } else {
             return false;
           }

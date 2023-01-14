@@ -74,24 +74,6 @@ export const PickOrdersScreen = ({
             size={34}
             style={{ marginLeft: -12 }}
           />
-          {/* {!!(itemsToPick.length - pickedItems.length) ? (
-            <Text style={{ color: GRAY_600, fontSize: APP_FONT_SIZE * 1.5 }}>
-              {itemsToPick.length - pickedItems.length} (
-              {itemsToPick.reduce(
-                (acc, val) => acc + parseInt(val.quantity!),
-                0
-              ) -
-                pickedItems.reduce(
-                  (acc, val) => acc + parseInt(val.quantity!),
-                  0
-                )}
-              ) items
-            </Text>
-          ) : (
-            <Text style={{ color: "green", fontSize: APP_FONT_SIZE * 1.5 }}>
-              All items picked
-            </Text>
-          )} */}
           <Text
             style={{
               color: GRAY_600,
@@ -108,7 +90,7 @@ export const PickOrdersScreen = ({
         showsVerticalScrollIndicator={false}
         style={{ maxHeight: height - SCREEN_ELEMENTS_HEIGHT.header - 24 }}
       >
-        {sortItems(
+        {/* {sortItems(
           itemsToPick.filter(
             (item) => !pickedItems.map((item) => item.id).includes(item.id)
           )
@@ -119,7 +101,205 @@ export const PickOrdersScreen = ({
             key={item.id}
             picked={pickedItems.map((item) => item.id).includes(item.id)}
           />
-        ))}
+        ))} */}
+        {/* Warehouse 2 - Level 1 */}
+        {!!sortItems(
+          itemsToPick.filter(
+            (item) => !pickedItems.map((item) => item.id).includes(item.id)
+          )
+        ).filter((item) => /^21/gi.test(item.location!)).length && (
+          <View>
+            <Text
+              style={{
+                color: GRAY_600,
+                fontSize: APP_FONT_SIZE * 1.5,
+                marginBottom: APP_PADDING,
+              }}
+            >
+              Warehouse 2 - Level 1
+            </Text>
+            {sortItems(
+              itemsToPick.filter(
+                (item) => !pickedItems.map((item) => item.id).includes(item.id)
+              )
+            )
+              .filter((item) => /^21/gi.test(item.location!))
+              .map((item, index) => (
+                <PickItemComponent
+                  isLast={index === itemsToPick.length - 1}
+                  item={item}
+                  key={item.id}
+                  picked={pickedItems.map((item) => item.id).includes(item.id)}
+                />
+              ))}
+          </View>
+        )}
+
+        {/* Warehouse 2 - Level 2 */}
+        {!!sortItems(
+          itemsToPick.filter(
+            (item) => !pickedItems.map((item) => item.id).includes(item.id)
+          )
+        ).filter((item) => /^22/gi.test(item.location!)).length && (
+          <View>
+            <Text
+              style={{
+                color: GRAY_600,
+                fontSize: APP_FONT_SIZE * 1.5,
+                marginBottom: APP_PADDING,
+              }}
+            >
+              Warehouse 2 - Level 2
+            </Text>
+            {sortItems(
+              itemsToPick.filter(
+                (item) => !pickedItems.map((item) => item.id).includes(item.id)
+              )
+            )
+              .filter((item) => /^22/gi.test(item.location!))
+              .map((item, index) => (
+                <PickItemComponent
+                  isLast={index === itemsToPick.length - 1}
+                  item={item}
+                  key={item.id}
+                  picked={pickedItems.map((item) => item.id).includes(item.id)}
+                />
+              ))}
+          </View>
+        )}
+
+        {/* Warehouse 1 - Level 1 */}
+        {!!sortItems(
+          itemsToPick.filter(
+            (item) => !pickedItems.map((item) => item.id).includes(item.id)
+          )
+        ).filter((item) => /^11/gi.test(item.location!)).length && (
+          <View>
+            <Text
+              style={{
+                color: GRAY_600,
+                fontSize: APP_FONT_SIZE * 1.5,
+                marginBottom: APP_PADDING,
+              }}
+            >
+              Warehouse 1 - Level 1
+            </Text>
+            {sortItems(
+              itemsToPick.filter(
+                (item) => !pickedItems.map((item) => item.id).includes(item.id)
+              )
+            )
+              .filter((item) => /^11/gi.test(item.location!))
+              .map((item, index) => (
+                <PickItemComponent
+                  isLast={index === itemsToPick.length - 1}
+                  item={item}
+                  key={item.id}
+                  picked={pickedItems.map((item) => item.id).includes(item.id)}
+                />
+              ))}
+          </View>
+        )}
+
+        {/* Warehouse 1 - Level 2 */}
+        {!!sortItems(
+          itemsToPick.filter(
+            (item) => !pickedItems.map((item) => item.id).includes(item.id)
+          )
+        ).filter((item) => /^12/gi.test(item.location!)).length && (
+          <View>
+            <Text
+              style={{
+                color: GRAY_600,
+                fontSize: APP_FONT_SIZE * 1.5,
+                marginBottom: APP_PADDING,
+              }}
+            >
+              Warehouse 1 - Level 2
+            </Text>
+            {sortItems(
+              itemsToPick.filter(
+                (item) => !pickedItems.map((item) => item.id).includes(item.id)
+              )
+            )
+              .filter((item) => /^12/gi.test(item.location!))
+              .map((item, index) => (
+                <PickItemComponent
+                  isLast={index === itemsToPick.length - 1}
+                  item={item}
+                  key={item.id}
+                  picked={pickedItems.map((item) => item.id).includes(item.id)}
+                />
+              ))}
+          </View>
+        )}
+
+        {/* Warehouse 2 - Ground */}
+        {!!sortItems(
+          itemsToPick.filter(
+            (item) => !pickedItems.map((item) => item.id).includes(item.id)
+          )
+        ).filter((item) => /^2G/gi.test(item.location!)).length && (
+          <View>
+            <Text
+              style={{
+                color: GRAY_600,
+                fontSize: APP_FONT_SIZE * 1.5,
+                marginBottom: APP_PADDING,
+              }}
+            >
+              Warehouse 2 - Ground
+            </Text>
+            {sortItems(
+              itemsToPick.filter(
+                (item) => !pickedItems.map((item) => item.id).includes(item.id)
+              )
+            )
+              .filter((item) => /^2G/gi.test(item.location!))
+              .map((item, index) => (
+                <PickItemComponent
+                  isLast={index === itemsToPick.length - 1}
+                  item={item}
+                  key={item.id}
+                  picked={pickedItems.map((item) => item.id).includes(item.id)}
+                />
+              ))}
+          </View>
+        )}
+
+        {/* Warehouse 1 - Ground */}
+        {!!sortItems(
+          itemsToPick.filter(
+            (item) => !pickedItems.map((item) => item.id).includes(item.id)
+          )
+        ).filter((item) => /^1G/gi.test(item.location!)).length && (
+          <View>
+            <Text
+              style={{
+                color: GRAY_600,
+                fontSize: APP_FONT_SIZE * 1.5,
+                marginBottom: APP_PADDING,
+              }}
+            >
+              Warehouse 1 - Ground
+            </Text>
+            {sortItems(
+              itemsToPick.filter(
+                (item) => !pickedItems.map((item) => item.id).includes(item.id)
+              )
+            )
+              .filter((item) => /^1G/gi.test(item.location!))
+              .map((item, index) => (
+                <PickItemComponent
+                  isLast={index === itemsToPick.length - 1}
+                  item={item}
+                  key={item.id}
+                  picked={pickedItems.map((item) => item.id).includes(item.id)}
+                />
+              ))}
+          </View>
+        )}
+
         {!!pickedItems.length && (
           <Pressable
             onPress={() => {
@@ -220,7 +400,7 @@ const PickItemComponent = ({
             textDecorationLine: picked ? "line-through" : "none",
           }}
         >
-          {item.location?.split(" ")[0]}
+          {item.location?.split(" ")[0].toUpperCase()}
         </Text>
       </Pressable>
       <Pressable
@@ -265,7 +445,7 @@ const sortItems = (items: OrderItemProps[]) => {
     .filter((item) => /^12/gi.test(item.location?.split(" ")[0]!))
     .sort((a, b) => a.location?.localeCompare(b.location));
   const W1G = mappedLocations
-    .filter((item) => /^12/gi.test(item.location?.split(" ")[0]!))
+    .filter((item) => /^1G/gi.test(item.location?.split(" ")[0]!))
     .sort((a, b) => a.location?.localeCompare(b.location));
 
   return [...W2L1, ...W2L2, ...W1L1, ...W1L2, ...W2G, ...W1G];

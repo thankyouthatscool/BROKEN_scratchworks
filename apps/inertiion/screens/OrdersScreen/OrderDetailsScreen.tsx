@@ -289,7 +289,7 @@ const OrderItems = ({
                 textAlign: "right",
               }}
             >
-              {orderItem.location?.split(" ")[0]}
+              {orderItem.location?.split(" ")[0].toUpperCase()}
             </Text>
           </View>
         );

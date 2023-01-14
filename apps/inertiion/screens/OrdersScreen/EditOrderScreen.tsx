@@ -10,7 +10,7 @@ import { TextBlockBase } from "@components/TextInput/TextBlockBase";
 import { TextInputBase } from "@components/TextInput/TextInputBase";
 import { useAppDispatch, useAppSelector } from "@hooks";
 import { setLocalOrders } from "@store";
-import { APP_FONT_SIZE, APP_PADDING, GRAY_600 } from "@theme";
+import { APP_FONT_SIZE, APP_PADDING, GRAY_600, GREEN_600 } from "@theme";
 import { EditOrderScreenRootProps, OrderItemProps, OrderProps } from "@types";
 import { updateLocalStorageOrders } from "@utils";
 
@@ -34,7 +34,7 @@ export const EditOrderScreen = ({
 
   return (
     <ScreenContainer>
-      <ScrollView>
+      <ScrollView overScrollMode="never" showsVerticalScrollIndicator={false}>
         <ScreenHeader>
           <Pressable
             onPress={() => navigation.goBack()}
@@ -97,7 +97,9 @@ export const EditOrderScreen = ({
             if (!orderItem.code && !orderItem.colors && !orderItem.size) {
               const words = orderItem.item?.split(" ");
 
-              itemCode = words?.filter((word) => /^[AH|G|IV]/gi.test(word))!;
+              itemCode = words?.filter((word) =>
+                /^[AH|B|G|IV|STS]/gi.test(word)
+              )!;
               itemSize = words?.filter(
                 (word) =>
                   ["s/m", "l/xl"].includes(word.toLowerCase()) ||
@@ -105,10 +107,11 @@ export const EditOrderScreen = ({
               )!;
               itemColors = words
                 ?.filter(
-                  (word) => !["s/m", "l/xl"].includes(word.toLowerCase())
+                  (word) =>
+                    !["s/s", "s/m", "m/l", "l/xl"].includes(word.toLowerCase())
                 )
                 .filter((word) => !/\d{1,2}cm/gi.test(word))
-                .filter((word) => !/^[AH|G|IV]/gi.test(word))
+                .filter((word) => !/^[AH|B|G|IV|STS]/gi.test(word))
                 .join(" ")
                 .split("/")!;
             } else {
@@ -324,11 +327,19 @@ const OrderItemForm = ({
           type="danger"
         />
       </View>
+      <View
+        style={{
+          borderBottomColor: GRAY_600,
+          borderBottomWidth: 1,
+          marginTop: APP_PADDING,
+        }}
+      />
     </View>
   );
 };
 
 const DELIVERY_METHODS = [
+  "Pick Up",
   "Air Bag",
   "Couriers Please",
   "First Express",

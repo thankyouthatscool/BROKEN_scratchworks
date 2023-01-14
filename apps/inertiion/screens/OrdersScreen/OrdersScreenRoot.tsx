@@ -36,7 +36,21 @@ export const OrdersScreenRoot = ({ navigation }: OrdersScreenRootProps) => {
   const handleLoadLocalOrders = async () => {
     const localOrders = await getLocalOrders();
 
-    dispatch(setLocalOrders(localOrders));
+    dispatch(
+      setLocalOrders(
+        localOrders.map((localOrder) => ({
+          ...localOrder,
+          orderItems: localOrder.orderItems.map((orderItem) => ({
+            ...orderItem,
+            code: orderItem.code?.toUpperCase(),
+            location: orderItem.location?.toUpperCase(),
+            size: /cm/gi.test(orderItem.size!)
+              ? orderItem.size
+              : orderItem.size?.toUpperCase(),
+          })),
+        }))
+      )
+    );
   };
 
   useEffect(() => {
@@ -308,18 +322,24 @@ export const OrderCard = ({
               </Text>
             </View>
             {orderDetails.orderItems.map((orderItem) => (
-              <View key={orderItem.id} style={{ flexDirection: "row" }}>
+              <View
+                key={orderItem.id}
+                style={{ alignItems: "center", flexDirection: "row" }}
+              >
                 <Text style={{ width: 40 }}>{orderItem.quantity}</Text>
                 <Text style={{ width: 70 }}>{orderItem.code}</Text>
                 <ItemColorsElement colors={orderItem.colors || ""} />
                 <Text style={{ width: 50 }}> {orderItem.size}</Text>
+                {pickedItems.map((item) => item.id).includes(orderItem.id) && (
+                  <MaterialIcons color="green" name="check" size={15} />
+                )}
                 <Text
                   style={{
                     flex: 1,
                     textAlign: "right",
                   }}
                 >
-                  {orderItem.location?.split(" ")[0]}
+                  {orderItem.location?.split(" ")[0].toUpperCase()}
                 </Text>
               </View>
             ))}

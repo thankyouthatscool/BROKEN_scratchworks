@@ -90,7 +90,9 @@ export const EditOrderScreen = ({
           selectedOrder.orderItems.map((orderItem) => {
             const words = orderItem.item?.split(" ");
 
-            const itemCode = words?.filter((word) => /^[AH|G|IV]/gi.test(word));
+            const itemCode = words?.filter((word) =>
+              /^[AH|B|G|IV|STS]/gi.test(word)
+            );
             const itemSize = words?.filter(
               (word) =>
                 ["s/m", "l/xl"].includes(word.toLowerCase()) ||
@@ -100,7 +102,7 @@ export const EditOrderScreen = ({
             const itemColors = words
               ?.filter((word) => !["s/m", "l/xl"].includes(word.toLowerCase()))
               .filter((word) => !/\d{1,2}cm/gi.test(word))
-              .filter((word) => !/^[AH|G|IV]/gi.test(word))
+              .filter((word) => !/^[AH|B|G|IV|STS]/gi.test(word))
               .join(" ")
               .split("/");
 
