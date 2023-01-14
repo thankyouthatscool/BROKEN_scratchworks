@@ -1,14 +1,12 @@
 import "module-alias/register";
 
 import * as trpcExpress from "@trpc/server/adapters/express";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { config } from "dotenv";
 import express from "express";
 import { exit } from "process";
 
 import { appRouter, createContext } from "@router";
-
-import { updateAppApiUrl } from "@utils";
 
 export { User } from "@prisma/client";
 export * from "./trpc";
@@ -41,11 +39,6 @@ const main = async () => {
     console.log("Running in dev...");
 
     try {
-      // const res = await axios.get("http://127.0.0.1:4040/api/tunnels");
-      // const tunnelPublicUrl = res.data.tunnels[0].public_url;
-
-      // updateAppApiUrl(tunnelPublicUrl);
-
       startServer(5001);
     } catch (err) {
       if (err instanceof AxiosError) {
