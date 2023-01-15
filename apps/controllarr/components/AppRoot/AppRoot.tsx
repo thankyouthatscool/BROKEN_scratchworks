@@ -4,47 +4,39 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { trpc } from "@utils/trpc";
 
+type TorrentData = {
+  hashString: string;
+  name: string;
+  percentDone: number;
+  rateDownload: number;
+  status: number;
+  totalSize: string;
+};
+
 export const AppRoot = () => {
-  const [torrentData, setTorrentData] = useState<
-    {
-      amount_left: number;
-      completed: number;
-      dlspeed: number;
-      downloaded: number;
-      hash: string;
-      name: string;
-      size: number;
-      state: string;
-    }[]
-  >([]);
+  const [torrentData, setTorrentData] = useState<TorrentData[]>([]);
 
-  const { mutateAsync: getTorrentsMutateAsync } =
-    trpc.controllar.torrent.getTorrents.useMutation();
+  const { mutateAsync: getTorrents } =
+    trpc.controllar.getTorrents.useMutation();
 
-  const { mutateAsync: pauseAllTorrentsMutateAsync } =
-    trpc.controllar.torrent.pauseAllTorrents.useMutation();
-  const { mutateAsync: pauseTorrentMutateAsync } =
-    trpc.controllar.torrent.pauseTorrent.useMutation();
+  // Resume torrents
+  const { mutateAsync: resumeTorrent } =
+    trpc.controllar.resumeTorrent.useMutation();
+  const { mutateAsync: resumeAllTorrents } =
+    trpc.controllar.resumeAllTorrents.useMutation();
 
-  const { mutateAsync: resumeAllTorrentsMutateAsync } =
-    trpc.controllar.torrent.resumeAllTorrents.useMutation();
-  const { mutateAsync: resumeTorrentMutateAsync } =
-    trpc.controllar.torrent.resumeTorrent.useMutation();
+  // Pause torrents
+  const { mutateAsync: pauseTorrent } =
+    trpc.controllar.pauseTorrent.useMutation();
+  const { mutateAsync: pauseAllTorrents } =
+    trpc.controllar.pauseAllTorrents.useMutation();
 
+  // Delete torrent
   const { mutateAsync: deleteTorrent } =
-    trpc.controllar.torrent.deleteTorrent.useMutation();
+    trpc.controllar.deleteTorrent.useMutation();
 
   const handleGetTorrentData = async () => {
-    const res: {
-      amount_left: number;
-      completed: number;
-      dlspeed: number;
-      downloaded: number;
-      hash: string;
-      name: string;
-      size: number;
-      state: string;
-    }[] = await getTorrentsMutateAsync();
+    const res: TorrentData[] = await getTorrents();
 
     setTorrentData(() => res);
   };
@@ -59,46 +51,89 @@ export const AppRoot = () => {
     };
   }, []);
 
+  const stateLookup = (stateCode: number) => {
+    switch (stateCode) {
+      case 0:
+        return "Torrent is stopped";
+      case 1:
+        return "Torrent is queued to verify local data";
+      case 2:
+        return "Torrent is verifying local data";
+      case 3:
+        return "Torrent is queued to download";
+      case 4:
+        return "Torrent is downloading";
+      case 5:
+        return "Torrent is queued to seed";
+      case 6:
+        return "Torrent is seeding";
+      default:
+        return "Torrent is doing something.";
+    }
+  };
+
   return (
     <SafeAreaView>
       <Button
         onPress={async () => {
-          await pauseAllTorrentsMutateAsync();
+          await pauseAllTorrents();
+
+          handleGetTorrentData();
         }}
         title="Pause All"
       />
       <Button
         onPress={async () => {
-          await resumeAllTorrentsMutateAsync();
+          await resumeAllTorrents();
+
+          handleGetTorrentData();
         }}
         title="Resume All"
       />
       <View style={{ paddingHorizontal: 8 }}>
         {torrentData.map((torrent) => {
           return (
-            <View
-              key={torrent.hash}
-              style={{ borderWidth: 2, marginBottom: 8 }}
-            >
+            <View key={torrent.hashString}>
               <Text>{torrent.name}</Text>
               <Text>
-                {Math.min(
-                  Math.max((100 * torrent.downloaded) / torrent.size, 0),
-                  100
-                )}
-                %
+                {Number(torrent.percentDone * 100)
+                  .toLocaleString(undefined, {
+                    style: "percentage",
+                    maximumFractionDigits: 2,
+                  })
+                  .split("")
+                  .slice(0, 5)
+                  .join("")
+                  .padEnd(5, "0")}
+                % @ {torrent.rateDownload}
               </Text>
-              <Text>{torrent.state}</Text>
-              <Button
-                onPress={async () => {
-                  if (/paused/gi.test(torrent.state)) {
-                    await resumeTorrentMutateAsync(torrent.hash);
-                  } else {
-                    await pauseTorrentMutateAsync(torrent.hash);
-                  }
+              <Text>{stateLookup(torrent.status)}</Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
                 }}
-                title={/paused/gi.test(torrent.state) ? "Resume" : "Pause"}
-              />
+              >
+                <Button
+                  color="red"
+                  onPress={async () => {
+                    await deleteTorrent(torrent.hashString);
+                  }}
+                  title="Remove"
+                />
+                <Button
+                  onPress={async () => {
+                    if (torrent.status === 0) {
+                      await resumeTorrent(torrent.hashString);
+                    } else {
+                      await pauseTorrent(torrent.hashString);
+                    }
+
+                    handleGetTorrentData();
+                  }}
+                  title={torrent.status === 0 ? "Resume" : "Stop"}
+                />
+              </View>
             </View>
           );
         })}
