@@ -1,3 +1,4 @@
+import UUID from "react-native-uuid";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { StatusBar } from "expo-status-bar";
@@ -13,7 +14,7 @@ export const App = () => {
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: `http://192.168.0.96:5001/trpc`,
+          url: `https://scratchworks.duckdns.org/trpc`,
         }),
       ],
     })
@@ -24,7 +25,7 @@ export const App = () => {
       <QueryClientProvider client={queryClient}>
         <View>
           <StatusBar style="auto" />
-          <AppRoot />
+          {/* <AppRoot /> */}
         </View>
       </QueryClientProvider>
     </trpc.Provider>

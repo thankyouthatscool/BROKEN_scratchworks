@@ -15,6 +15,7 @@
     "container:server:init": "docker run -d --env-file ./apps/scratchworks-backend/.env --env NODE_ENV=prod --name scratchworks-backend-server --network container:postgres ozahnitko/scratchworks-backend-server:dev-latest",
     "open:all": "yarn open:app & yarn open:server",
     "open:app": "code ./apps/inertiion",
+    "open:controllar": "code ./apps/controllarr",
     "open:infr": "code ./infrastructure",
     "open:moovies": "code ./apps/moovies",
     "open:server": "code ./apps/scratchworks-backend",

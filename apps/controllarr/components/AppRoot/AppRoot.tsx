@@ -1,20 +1,28 @@
-import { useEffect, useState } from "react";
-import { Button, Pressable, Text, View } from "react-native";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Checkbox from "expo-checkbox";
+import { useEffect, useRef, useState } from "react";
+import {
+  Button,
+  Dimensions,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ProgressBar } from "@components/ProgressBar";
+import { TorrentData } from "@types";
+import { getLSTorrentData, setLSTorrentData } from "@utils/localStorage";
 import { trpc } from "@utils/trpc";
 
-type TorrentData = {
-  hashString: string;
-  name: string;
-  percentDone: number;
-  rateDownload: number;
-  status: number;
-  totalSize: string;
-};
+const { height } = Dimensions.get("window");
 
 export const AppRoot = () => {
+  const initialLoadRef = useRef<boolean>(false);
+
   const [torrentData, setTorrentData] = useState<TorrentData[]>([]);
+  const [autoPause, setAutoPause] = useState<boolean>(false);
 
   const { mutateAsync: getTorrents } =
     trpc.controllar.getTorrents.useMutation();
@@ -36,20 +44,42 @@ export const AppRoot = () => {
     trpc.controllar.deleteTorrent.useMutation();
 
   const handleGetTorrentData = async () => {
+    if (!initialLoadRef.current) {
+      const lsData = await getLSTorrentData();
+
+      setTorrentData(() => lsData);
+    }
+
     const res: TorrentData[] = await getTorrents();
 
+    initialLoadRef.current = true;
+
+    setLSTorrentData(res);
+
     setTorrentData(() => res);
+  };
+
+  const handlePauseAllTorrents = async () => {
+    console.log("Pausing all torrents");
+
+    await pauseAllTorrents();
   };
 
   useEffect(() => {
     handleGetTorrentData();
 
-    const refresh = setInterval(handleGetTorrentData, 3000);
+    const refresh = setInterval(handleGetTorrentData, 5000);
 
     return () => {
       clearInterval(refresh);
     };
   }, []);
+
+  useEffect(() => {
+    if (!!autoPause) {
+      handlePauseAllTorrents();
+    }
+  }, [autoPause, torrentData]);
 
   const stateLookup = (stateCode: number) => {
     switch (stateCode) {
@@ -74,40 +104,67 @@ export const AppRoot = () => {
 
   return (
     <SafeAreaView>
-      <Button
-        onPress={async () => {
-          await pauseAllTorrents();
-
-          handleGetTorrentData();
+      <View
+        style={{
+          alignItems: "center",
+          flexDirection: "row",
+          padding: 8,
+          justifyContent: "space-between",
         }}
-        title="Pause All"
-      />
-      <Button
-        onPress={async () => {
-          await resumeAllTorrents();
+      >
+        <View style={{ flexDirection: "row" }}>
+          <Pressable
+            onPress={async () => {
+              await pauseAllTorrents();
 
-          handleGetTorrentData();
-        }}
-        title="Resume All"
-      />
-      <View style={{ paddingHorizontal: 8 }}>
+              handleGetTorrentData();
+            }}
+          >
+            <MaterialIcons name="pause" size={40} />
+          </Pressable>
+          <Pressable
+            onPress={async () => {
+              await resumeAllTorrents();
+
+              handleGetTorrentData();
+            }}
+          >
+            <MaterialIcons name="play-arrow" size={40} />
+          </Pressable>
+        </View>
+        <View style={{ flexDirection: "row" }}>
+          <Text style={{ marginRight: 8 }}>Auto Pause</Text>
+          <Checkbox onValueChange={setAutoPause} value={autoPause} />
+        </View>
+      </View>
+      <ScrollView
+        overScrollMode="never"
+        style={{ height: height - 57, paddingHorizontal: 8 }}
+        showsVerticalScrollIndicator={false}
+      >
         {torrentData.map((torrent) => {
           return (
-            <View key={torrent.hashString}>
-              <Text>{torrent.name}</Text>
+            <View
+              key={torrent.hashString}
+              style={{
+                backgroundColor: "white",
+                elevation: 2,
+                marginBottom: 8,
+                padding: 8,
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: "500" }}>
+                {torrent.name}
+              </Text>
               <Text>
-                {Number(torrent.percentDone * 100)
-                  .toLocaleString(undefined, {
-                    style: "percentage",
-                    maximumFractionDigits: 2,
-                  })
-                  .split("")
-                  .slice(0, 5)
-                  .join("")
-                  .padEnd(5, "0")}
+                {Number(torrent.percentDone * 100).toLocaleString(undefined, {
+                  style: "percentage",
+                  maximumFractionDigits: 2,
+                })}
                 % @ {torrent.rateDownload}
               </Text>
               <Text>{stateLookup(torrent.status)}</Text>
+              <ProgressBar percentDone={torrent.percentDone} />
               <View
                 style={{
                   flexDirection: "row",
@@ -131,13 +188,17 @@ export const AppRoot = () => {
 
                     handleGetTorrentData();
                   }}
-                  title={torrent.status === 0 ? "Resume" : "Stop"}
+                  title={
+                    torrent.status === 0 || torrent.status === 3
+                      ? "Resume"
+                      : "Stop"
+                  }
                 />
               </View>
             </View>
           );
         })}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
